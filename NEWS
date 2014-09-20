@@ -1,0 +1,8 @@
+RRreg 0.1.3 (September 2014)
+===========
+
+* first stable release of RRreg
+* data generation: RRgen, RRsimu
+* statistical analysis: RRuni, RRlog, RRcor, RRlin
+* one-group RR designs: Warner, Kuk, Mangat, FR, Crosswise UQTknown
+* two-group RR designs: UQTunknown, CDM, CDMsym, SLD
