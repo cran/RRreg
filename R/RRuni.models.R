@@ -209,3 +209,51 @@ RRuni.CDMsym.llgrad <- function(param,x,p,group){
 # RRuni.CDMsym(datS$response,pp,datS$group)
 # print(RRuni.CDMsym.llgrad(par,datS$response,pp,datS$group))
 # print(grad(func=RRuni.CDMsym.ll,x=par,xxx=datS$response,p=pp,group=datS$group))
+
+########################################
+# Continuous RR: Greenberg kuebler abernathy horvitz 1971 (p. 247)
+RRuni.mix.norm<-function(response,p){
+  mean.obs <- mean(response)
+  pi <- (mean.obs - (1-pt) * p[2]) / pt
+  n <- length(response)
+  piSE <- sd(response)/(sqrt(n)*p)
+  pstring <- paste0("'p[1]'=",round(p[1],4)," (probability of answering sensitive question), 'p[2]'=",p[2]," (p[3]=",p[3],"): mean (SD) of masking distribution")
+  res <- list(model="mix.norm",call=paste0("Continuous mixture RR design with probability of truthful responding ",pstring),pi=pi,piSE=piSE,n=n)
+  return(res)
+} 
+
+# Continuous RR
+RRuni.mix.exp<-function(response,p){
+  mean.obs <- mean(response)
+  pi <- (mean.obs - (1-pt) * p[2]) / pt
+  n <- length(response)
+  piSE <- sd(response)/(sqrt(n)*p)  
+  pstring <- paste0("'p[1]'=",round(p[1],4)," (probability of answering sensitive question), 'p[2]'=",p[2],": mean and SD of exponential masking distribution")
+  res <- list(model="mix.norm",call=paste0("Continuous mixture RR design with probability of truthful responding ",pstring),pi=pi,piSE=piSE,n=n)
+  return(res)
+} 
+
+# two questions with two unknown distributions (two-group model)
+RRuni.mix.unknown<-function(response,p,group){
+  mean.obs1 <- mean(response[group==1])
+  mean.obs2 <- mean(response[group==2])
+  pi <- ((1-p[2])*mean.obs1 - (1-p[1])*mean.obs2) /(p[1]-p[2])
+  piUQ <- (p[2]*mean.obs1 - p[1]*mean.obs2)/(p[2]-p[1])
+  
+  v.obs1 <- var(response[group==1])/sum(group==1)
+  v.obs2 <- var(response[group==2])/sum(group==2)
+  piSE <- sqrt((1-p[2])^2*v.obs1 + (1-p[1])^2*v.obs2)/abs(p[1]-p[2])
+  piUQSE <- sqrt(p[2]^2*v.obs1 + p[1]^2*v.obs2)/abs(p[2]-p[1])
+  
+  # for RRcor: calculate sigma^2(sensitive) ... not SE! (seems to work fine)
+  num <- p[2]*(p[1]*pi+(1-p[1])*piUQ)^2-p[1]*(p[2]*pi+(1-p[2]*piUQ))^2
+  y.var <- var(response[group==1]) - piUQ^2 + num/(p[2]-p[1])
+  num <- (1-p[2])*(p[1]*pi+(1-p[1])*piUQ)^2-(1-p[1])*(p[2]*pi+(1-p[2]*piUQ))^2
+  x.var<- var(response[group==2]) - pi^2 + num/(p[1]-p[2])
+  
+  pstring <- paste0("'p[1]='",round(p[1],4)," (p[2]=",round(p[2],4),"): probability of answering sensitive (irrelevant) question")
+  res <- list(model="mix.unknown",call=paste0("Continuous mixture RR design with probability of truthful responding ",pstring),pi=pi,piSE=piSE,piUQ=piUQ, piUQSE=piUQSE,n=length(response),y.var=y.var, x.var=x.var)
+#   print(x.var)
+#   print(y.var)
+  return(res)
+} 

@@ -3,16 +3,15 @@
 \alias{RRlog}
 \title{Logistic randomized response regression}
 \usage{
-RRlog(formula, data, model = c("Warner", "UQTknown", "UQTunknown", "Mangat",
-  "Kuk", "FR", "Crosswise", "CDM", "CDMsym", "SLD"), p, group, LR.test = TRUE,
-  fit.n = c(10, 100), fit.bound = 10, maxit = 1000, start = NULL, ...)
+RRlog(formula, data, model, p, group, LR.test = TRUE, fit.n = c(10, 100),
+  fit.bound = 10, maxit = 1000, start = NULL, ...)
 }
 \arguments{
 \item{formula}{specifying the regression model, see \code{\link{formula}}}
 
 \item{data}{\code{data.frame}, in which variables can be found (optional)}
 
-\item{model}{defining RR model, e.g., \code{"Warner"}}
+\item{model}{Available RR models: \code{"Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD"}. See \code{vignette("RRreg")} for details.}
 
 \item{p}{randomization probability/probabilities (depending on model)}
 
@@ -42,7 +41,7 @@ dat <- RRgen(1000,pi=.3,"Warner",p=.8)
 dat$covariate <- rnorm(1000)
 dat$covariate[dat$true==1] <- rnorm(sum(dat$true==1),.4,1)
 # analyse
-ana <- RRlog(response~covariate,dat,"Warner",.8)
+ana <- RRlog(response~covariate,dat,"Warner",.8, fit.n = c(1,5))
 summary(ana)
 }
 \author{

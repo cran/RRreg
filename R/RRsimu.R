@@ -1,46 +1,72 @@
 #'@title  Monte Carlo simulation for one or two RR variables
 #' 
-#' @description Simulate and analyse bivariate data including either one or two RR variables. Useful for power analysis, parametric bootstraps or for testing the effects of noncompliance on the stability of estimates.
+#' @description Simulate and analyse bivariate data including either one RR variable (either correlation, logistic, or linear regression model) or two RR variables (only correlations). Useful for power analysis, parametric bootstraps or for testing the effects of noncompliance on the stability of estimates.
 #' @param numRep number of replications
 #' @param n sample size
 #' @param pi true proportion of carriers of sensitive attribute (for 2 RR variables: \code{vector})
 #' @param model either one or two RR model (as \code{vector}), see \code{\link{RRuni}}
 #' @param p randomization probability (for 2 RR variables: a \code{list})
-#' @param rho true correlation in population (also known as point-biserial/point-tetrachoric correlation, in case of one/two dichotomous RR variables)
+#' @param cor true Pearson-correlation used for data generation (for \code{\link{RRcor}}). Can also be used to generate data with two dichotomous RR variables.
+#' @param b.log true regression coefficient in logistic regression (for \code{\link{RRlog}})
+#   @param b.lin true regression coefficient in linear regression (for \code{\link{RRlin}})
+#   @param sig.lin error variance for linear regression model, only used if \code{b.lin} not 0
 #' @param complyRates vector with two values giving the proportions of participants who adhere to the instructions in the subset with or without the sensitive attribute, respectively (for 2 RR variables: a \code{list})
 #' @param sysBias probability of responding 'yes' (coded as 1 in the RR variable) in case of non-compliance for carriers and non-carriers, respectively. See \code{\link{RRgen}}
-#' @param method vector specifying which RR methods to be used in each replication. For a single RR variable, all three methods can be used. For 2 RR variables, only \code{\link{RRcor}} is available.
+#' @param method vector specifying which RR methods to be used in each replication. For a single RR variable, the methods \code{\link{RRuni}}, \code{\link{RRcor}},\code{\link{RRlog}}, and \code{\link{RRlin}} are available. For 2 RR variables, only \code{\link{RRcor}} is available.
 #' @param alpha significance threshold for testing the logistic regression parameter \code{beta}
-#' @param groupRatio only for multiple group models: ratio of groups (for 2 RR variables: \code{vector})
+#' @param groupRatio proportion of participants in group 1. Only for two-group models (e.g., \code{"SLD"}) (for 2 RR variables: \code{vector})
 #' @param MLest correct estimates of \code{RRuni} if pi is outside of [0,1]
+#' @param getPower whether to compute power for \code{method="RRcor"} (performs an additional bootstrap assuming independence)
 #' @param nCPU integer: how many processors to use? (use 'max' for automatic detection on Windows)
-#' @return an object \code{RRsimu} which contains the estimated parameters \code{parEsts} and a matrix \code{results} with mean parameters and standard errors across replications
-#' @details In case of using only one RR variable, the second, directly measured variable is sampled from a normal distribution with shifted means, depending on the true state on the sensitive attribute (i.e., the true, underlying values on the RR variable). For dichotomous RR variables, this corresponds to the assumption of an ordinary t-test, where the dependent variable is normally distributed within groups with equal variance. The difference in means is chosen in a way, to obtain the point-biserial correlation defined by \code{rho}.
+#' @return a list containing:
 #' 
-#' In case of two dichotomous RR variables, the true group membership of individuals is sampled from a 2x2 cross table. Within this table, probabilities are chosen in a way, to obtain the point-tetrachoric correlation defined by \code{rho}
+#'  \code{parEsts} a matrix containing the estimated parameters
+#'  \code{results} a matrix  with mean parameters, standard errors, and number of samples to which the respective method could not be fitted
+#'  \code{power} a vector with the estimated power of the selected randomized response procedures
+#' @details  A single RR variable:
 #' 
-#' Note, that for the FR model with multiple response categories (e.g., from 0 to 4), the specified \code{rho} is not the exact target of the sampling procedure. It assumes a normal distribution for each true state, with constant differences between the groups (i.e., it assumes an interval scaled variable).
-#' @examples # Simulate data according to the Warner model
-#' mcsim <-  RRsimu(numRep=5, n=200, pi=.3, model="Warner", p=2/12, rho=.6)
-#' mcsim
-#' plot(mcsim)
+#' The parameter \code{b.log} is the slope-coefficient for the true, latent values in a logistic regression model that is used for data generation. 
+#' 
+#' The argument \code{cor} is used for data generation for linear models. The directly measured covariate is sampled from a normal distribution with shifted means, depending on the true state on the sensitive attribute (i.e., the true, underlying values on the RR variable). For dichotomous RR variables, this corresponds to the assumption of an ordinary t-test, where the dependent variable is normally distributed within groups with equal variance. The difference in means is chosen in a way, to obtain the point-biserial correlation defined by \code{cor}.
+#' 
+#' Two RR variables:
+#' 
+#' \code{cor} has to be used. In case of two dichotomous RR variables, the true group membership of individuals is sampled from a 2x2 cross table. Within this table, probabilities are chosen in a way, to obtain the point-tetrachoric correlation defined by \code{cor}
+#' 
+#' Note, that for the FR model with multiple response categories (e.g., from 0 to 4), the specified \code{cor} is not the exact target of the sampling procedure. It assumes a normal distribution for each true state, with constant differences between the groups (i.e., it assumes an interval scaled variable).
+#' @examples # Not run: Simulate data according to the Warner model
+#' # mcsim <-  RRsimu(numRep=100, n=300, pi=.4, model="Warner", p=.2, cor=.3)
+#' # print(mcsim)
 #' @import doParallel
 #' @import parallel
 #' @import foreach
 #' @export
-RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1), 
-                   sysBias=c(0,0), method=c("RRuni","RRcor","RRlog"), 
-                   alpha=0.05, groupRatio=0.5, MLest=TRUE, nCPU=1){
+RRsimu <- function(numRep, n, pi, model, p, cor=0, b.log=0, complyRates=c(1,1), 
+                   sysBias=c(0,0), method=c("RRuni","RRcor","RRlog","RRlin"), 
+                   alpha=0.05, groupRatio=0.5, MLest=TRUE, getPower=TRUE, nCPU=1){
   try(stopCluster(cl.tmp), silent = T)
   
   modelNames <- c("Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","direct","CDM","CDMsym","SLD")
   model <- pmatch(model, modelNames, duplicates.ok=T )
   model <- modelNames[model]
   
+  checkzero <- c(cor!=0, b.log!=0)
+  if(sum(checkzero) >1){
+    if (cor!= 0){
+      if (abs(cor) > 1)
+        warning("True correlation cor must be in the interval [-1, 1].")
+      b.log <- 0
+    }
+    warning(paste("Only the argument 'cor' is used for data generation (linear model)! Currently used: cor =", cor,"; b.log =", b.log))
+  }
+  
   nn <- c("pi.true","pi.RRuni","pi2.true","pi2.RRuni","piSE.RRuni",
-          "cor.true","cor.RRcor","beta.true","betaSE.true","beta.RRlog","betaSE.RRlog",
-          "beta.deltaG2.RRlog","par2.true","par2.RRuni","par2SE.RRuni")
-  #   allvars <- c(pi[1], pi[1], pi[2], pi[2] , NA, rho, rho, )
+          "cor.true","cor.RRcor",
+          "beta.true","betaSE.true","beta.RRlog","betaSE.RRlog",
+          "lincoef.true","lincoefSE.true","lincoef.RRlin","lincoefSE.RRlin",
+          "beta.deltaG2.RRlog",
+          
+          "par2.true","par2.RRuni","par2SE.RRuni")
   nvar <- length(nn)
   
   # check: one or two RR variables
@@ -48,26 +74,30 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
   if (length(model)<1 | length(model) > 2)
     stop("Definition of either one or two RR variables required (e.g., model='Warner').")
   twoRR <- length(model)==2
-  if (!twoRR){
-    # if (class(complyRates)!= "list") complyRates <- list(complyRates)
-    # if only one RR variable included: transform correlation to mean difference
-    diffMean <- sqrt(rho^2/(pi[1]*(1-pi[1])*(1-rho^2))) * sign(rho)
-    if (model == "FR" & length(pi)>2){
-      ppi <- pi
-      if (min(pi)==0){
-        ppi <- pi + .001
+  if (twoRR &&  b.log != 0)
+    warning("For two RR variables, only the argument cor is used to simulate data.")
+  if (cor != 0){
+    if (!twoRR){
+      # if (class(complyRates)!= "list") complyRates <- list(complyRates)
+      # if only one RR variable included: transform correlation to mean difference
+      diffMean <- sqrt(cor^2/(pi[1]*(1-pi[1])*(1-cor^2))) * sign(cor)
+      if (model == "FR" & length(pi)>2){
+        ppi <- pi
+        if (min(pi)==0){
+          ppi <- pi + .001
+        }
+        diffMean <-  sign(cor)*mean(sqrt(cor^2/(ppi*(1-ppi)*(1-cor^2)))) * sqrt(pi%*% pi)
       }
-      diffMean <-  sign(rho)*mean(sqrt(rho^2/(ppi*(1-ppi)*(1-rho^2)))) * sqrt(pi%*% pi)
+    }else{
+      # two RR variables: think about data generation !
+      if (missing(complyRates)) complyRates <- list(c(1,1),c(1,1))
+      if (missing(groupRatio)) groupRatio <- c(.5,.5)
+      if(length(pi)!=2 ||min(pi)<=0 ||max(pi)>=1) stop("Please provide a vector pi with two values in (0,1)")
     }
-  }else{
-    # two RR variables: think about data generation !
-    if (missing(complyRates)) complyRates <- list(c(1,1),c(1,1))
-    if (missing(groupRatio)) groupRatio <- c(.5,.5)
-    if(length(pi)!=2 ||min(pi)<=0 ||max(pi)>=1) stop("Please provide a vector pi with two values in (0,1)")
   }
   
   ### CDM and CDMsym not available in RRcor
-  if (any(model %in% c("CDM","CDMsym"))){
+  if (any(model %in% c("CDM","CDMsym")) && any( c("RRlin","RRcor") %in% method)){
     method <- method[!(method == "RRcor")]
     warning("Models 'CDM' and 'CDMsym' are not available in RRcor because both define a third group of cheaters (see vignette('RRreg') ).")
   }
@@ -77,28 +107,41 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
     parEsts <- matrix(NA,nrow=replic,ncol=nvar)
     colnames(parEsts) <- nn
     parEsts <- as.data.frame(parEsts)
-    for (i in 1:(replic)){
-      # generate continuous and discrete variable (point-biserial correlation)
-      dat <- RRgen(n=n,pi.true=pi,model=model,p=p,complyRates=complyRates,
-                   sysBias=sysBias, groupRatio=groupRatio)
-      n.true <- table(dat$true)
-      #       nn <- names(n.true)
-      #       if (length(nn) != length(p)){
-      #         
-      #       }
-      dat$cov <- rep(0,n)
+    cnt <- 1 ; maxtrys <- 5 ; trys <- 0
+#     okcor <- T; oklog <- T; oklin <- T; 
+    while(cnt <= replic){
+      trys <- trys+1
       
       # generate normal data dependent on true value on RR variable
       # k : loop through true states
-      for (k in 0:(length(n.true)-1) ){
-        #         for(l in 0:(length(pi)-1)){
-        #           nsel <- names(n.true)[k+1]==paste(l)
-        #           if(nsel){
-        #             print(k*diffMean)
-        dat[dat$true==k,]$cov <-  rnorm(n.true[k+1],k*diffMean,1)
-        #           }
-        #         }
+      if (cor != 0){
+        # generate continuous and discrete variable (point-biserial correlation)
+        dat <- RRgen(n=n,pi.true=pi,model=model,p=p,complyRates=complyRates,
+                     sysBias=sysBias, groupRatio=groupRatio)
+        n.true <- table(dat$true)
+        dat$cov <- rep(0,n)
+        for (k in 0:(length(n.true)-1) ){
+          dat[dat$true==k,]$cov <-  rnorm(n.true[k+1],k*diffMean,1)
+        }
+        # generate from logistic regression model
+      }else if (b.log != 0){
+        cov <- rnorm(n)
+        modelpred <- log(pi/(1-pi)) + b.log*cov
+        probsens <- 1/(1+exp(-modelpred))
+        true <- rbinom(n, 1, probsens)
+        dat <- RRgen(n=n,model=model,p=p,complyRates=complyRates,
+                     sysBias=sysBias, groupRatio=groupRatio, trueState=true)
+        dat$cov <- cov
+      }else{  ## use RRlin with b.lin=0 anyways
+#         true <- rbinom(n, 1, pi)
+#         dat <- RRgen(model=model, p=p, complyRates=complyRates,
+#                         sysBias=sysBias, groupRatio=groupRatio, trueState=true)
+#         dat$cov <- b.lin * true + rnorm(n, sd=sig.lin)
+        dat <- RRgen(n=n,pi.true=pi,model=model,p=p,complyRates=complyRates,
+                     sysBias=sysBias, groupRatio=groupRatio)
+        dat$cov <- rnorm(n)
       }
+      
       if (is.null(dat$group)) 
         group <- rep(1,nrow(dat))
       else 
@@ -109,47 +152,74 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
         cor1 <- RRcor(x=dat[,c("response","cov")],
                       models=c(model,"d"),p.list= list(p,1),
                       group=group )  
-        parEsts[i,"cor.true"] <- cor(dat$true,dat$cov)
-        parEsts[i,"cor.RRcor"] <- cor1$r["cov","response"]
+        parEsts[cnt,"cor.true"] <- cor(dat$true,dat$cov)
+        parEsts[cnt,"cor.RRcor"] <- cor1$r["cov","response"]
+        if (trys <maxtrys && is.na(cor1$r["cov","response"])) next
       }
       
       uni1 <- RRuni(response=dat$response,model=model,p=p,group=group,MLest=MLest)  
       if ("RRuni" %in% method){
-        parEsts[i,"pi.true"] <- table(dat$true)["1"]/n
-        parEsts[i,"pi.RRuni"] <- uni1$pi[ifelse(model=="FR",2,1)]
-        parEsts[i,"piSE.RRuni"] <- uni1$piSE[ifelse(model=="FR",2,1)]
+        parEsts[cnt,"pi.true"] <- table(dat$true)["1"]/n
+        parEsts[cnt,"pi.RRuni"] <- uni1$pi[ifelse(model=="FR",2,1)]
+        parEsts[cnt,"piSE.RRuni"] <- uni1$piSE[ifelse(model=="FR",2,1)]
         
         if (model %in% c("CDMsym","CDM")){
-          parEsts[i,"pi.true"] <- table(dat[dat$comply==1,"true"])["1"]/n
-          parEsts[i,"par2.true"] = 1- colMeans(dat)["comply"]
-          parEsts[i,"par2.RRuni"] = uni1$gamma
-          #         parEsts[i,"par2SE.RRuni"] = uni1$gammaSE
+          parEsts[cnt,"pi.true"] <- table(dat[dat$comply==1,"true"])["1"]/n
+          parEsts[cnt,"par2.true"] = 1- colMeans(dat)["comply"]
+          parEsts[cnt,"par2.RRuni"] = uni1$gamma
+          #         parEsts[cnt,"par2SE.RRuni"] = uni1$gammaSE
         }else if (model== "SLD"){
-          parEsts[i,"par2.true"] = colMeans(dat[dat$true==1,])["comply"]
-          parEsts[i,"par2.RRuni"] = uni1$t
-          #         parEsts[i,"par2SE.RRuni"] = uni1$tSE
+          parEsts[cnt,"par2.true"] = colMeans(dat[dat$true==1,])["comply"]
+          parEsts[cnt,"par2.RRuni"] = uni1$t
+          #         parEsts[cnt,"par2SE.RRuni"] = uni1$tSE
         } 
       }
       
       if ("RRlog" %in% method){
-        parEsts[i,"beta.true"] <- NA
+#         oklog <- F
+        parEsts[cnt,"beta.true"] <- NA
         # adjust dependent variable for CDM: having sensitive attribute and commiting in RR design!
         if (model %in% c("CDMsym","CDM")){
           dat$true <- dat$true & dat$comply
         }
-        tryCatch({
+        try({
           glm1 <- glm(true~cov,dat,family=binomial(link = "logit"))
-          parEsts[i,"beta.true"] <- glm1$coefficients["cov"]
-          parEsts[i,"betaSE.true"] <- summary(glm1)$coef[2,2]    
-        },
-        error=function(e) {})
+          parEsts[cnt,"beta.true"] <- glm1$coefficients["cov"]
+          parEsts[cnt,"betaSE.true"] <- summary(glm1)$coef[2,2]    
+        }, silent=T)
         
-        log1 <- RRlog(response~cov,data=dat,model=model,p=p,group=group, LR.test=T)
-        parEsts[i,"beta.RRlog"] <- log1$coefficients["cov"]
-        parEsts[i,"betaSE.RRlog"] <- sqrt(log1$vcov["cov","cov"])
-        parEsts[i,"beta.deltaG2.RRlog"] <- -2*log1$deltaLogLik["cov"]
+        try({log1 <- RRlog(response~cov,data=dat,model=model,p=p,group=group, 
+                           LR.test=T, fit.n=c(1,10), fit.bound = 8)
+             parEsts[cnt,"beta.RRlog"] <- log1$coefficients["cov"]
+             parEsts[cnt,"betaSE.RRlog"] <- sqrt(log1$vcov["cov","cov"])
+             parEsts[cnt,"beta.deltaG2.RRlog"] <- -2*log1$deltaLogLik["cov"]
+#              oklog <- T
+        }, silent=T)
+        if (trys <maxtrys &&  is.na(parEsts[cnt,"beta.RRlog"])) next
       } 
       
+      
+      if ("RRlin" %in% method){
+#         oklin <- F
+        parEsts[cnt,"lincoef.true"] <- NA
+        # adjust dependent variable for CDM: having sensitive attribute and commiting in RR design!
+        if (model %in% c("CDMsym","CDM")){
+          dat$true <- dat$true & dat$comply
+        }
+          lm1 <- lm(cov~true,dat)
+          parEsts[cnt,"lincoef.true"] <- coef(lm1)["true"]
+          parEsts[cnt,"lincoefSE.true"] <- sqrt(vcov(lm1)["true","true"])
+        
+        try({linmod <- RRlin(cov~response,data=dat,models=model,p.list=list(p),
+                             group=group, fit.n=1)
+             parEsts[cnt,"lincoef.RRlin"] <- linmod$beta["response"]
+             parEsts[cnt,"lincoefSE.RRlin"] <- sqrt(vcov(linmod)["response","response"])
+             parEsts[cnt,"lincoef.deltaG2.RRlin"] <- -2*logLik(linmod)["response"]
+#              oklin <- T
+        }, silent=T)
+        if (trys <maxtrys &&  is.na(parEsts[cnt,"lincoef.RRlin"])) next
+      }
+      cnt <- cnt+1
     }
     parEsts
   }
@@ -164,13 +234,13 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
       # for a fourfold table, with marginal proportions pi[1] and pi[2]
       # a b
       # c d
-      cov <- rho * sqrt(pi[1]*(1-pi[1])*pi[2]*(1-pi[2]))
+      cov <- cor * sqrt(pi[1]*(1-pi[1])*pi[2]*(1-pi[2]))
       a <- pi[1]*pi[2] + cov
       b <- pi[1]*(1-pi[2]) - cov
       c <- (1-pi[1])*pi[2] - cov
       d <- (1-pi[1])*(1-pi[2]) + cov
       if(any(c(a,b,c,d)<0))
-        stop("The given correlation coefficient rho=",rho," (phi coefficient) is not observable with n=",n, " and pi=c(",pi[1],", ",pi[2],").")
+        stop("The given correlation coefficient cor=",cor," (phi coefficient) is not observable with n=",n, " and pi=c(",pi[1],", ",pi[2],").")
       dat <- expand.grid(0:1,0:1)[sample(1:4, size=n, replace=TRUE, prob=c(a,b,c,d)),]
       colnames(dat) <- c("true1", "true2")
       RR1 <- RRgen(model =model[1], pi.true=.3, p=p[[1]], complyRates = complyRates[[1]],
@@ -195,52 +265,84 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
   }
   
   ###############################################
-  
-  # multi core processing
-  if (nCPU!=1){
-#     require(doParallel, quietly=T)
-    if (nCPU=="max"){
-      try(nCPU <-  as.numeric(Sys.getenv('NUMBER_OF_PROCESSORS')))
-      if (nCPU=="max") nCPU <- 2    
-    }
-    cl.tmp =  makeCluster(nCPU) 
-    registerDoParallel(cl.tmp, cores=nCPU)
-    #   try(rm(parEsts), silent=TRUE)
-    if (!twoRR){
-      parEsts <- foreach(k=1:nCPU , .combine= rbind,.packages='RRreg') %dopar% { 
-        getParEsts.oneRR(ceiling(numRep/nCPU)) }
-    }else{
-      parEsts <- foreach(k=1:nCPU , .combine= rbind,.packages='RRreg') %dopar% { 
-        getParEsts.twoRR(ceiling(numRep/nCPU)) }
-    }
-    stopCluster(cl.tmp)
-  }else{
-    if(!twoRR)
-      parEsts <- getParEsts.oneRR(numRep)
-    else
-      parEsts <- getParEsts.twoRR(numRep)
+
+# multi core processing
+if (nCPU!=1){
+  #     require(doParallel, quietly=T)
+  if (nCPU=="max"){
+    try(nCPU <-  as.numeric(Sys.getenv('NUMBER_OF_PROCESSORS')))
+    if (nCPU=="max") nCPU <- 2    
   }
-  
-  # significance testing of beta coefficients
-  #parEsts[,"beta.perctSignif.RRlog"] <- parEsts[,"beta.prob.RRlog"]  <alpha
-  parEsts <- as.matrix(parEsts)
-  
-  # summarize simulation results
-  NAs <-  colSums(is.na(parEsts))
-  results <- data.frame(Mean=colMeans(parEsts,na.rm =T),
-                        #                         SE=bs.se(parEsts,)
-                        SE=apply(parEsts,2,sd,na.rm =T)
-  )
-  results <- cbind(results,NAs)
-  results <- results[!is.na(results[,1]),]
-  parEsts <- parEsts[,NAs!=numRep]
-  
-  
-  sim <- list(parEsts = parEsts, results = results,
-              model=model,p=p,n=n,numRep=numRep,NAs=NAs,
-              complyRates=complyRates, sysBias=sysBias, groupRatio=groupRatio)
-  class(sim) <- "RRsimu"
-  sim
+  cl.tmp =  makeCluster(nCPU) 
+  registerDoParallel(cl.tmp, cores=nCPU)
+  #   try(rm(parEsts), silent=TRUE)
+  if (!twoRR){
+    parEsts <- foreach(k=1:nCPU , .combine= rbind,.packages='RRreg') %dopar% { 
+      getParEsts.oneRR(ceiling(numRep/nCPU)) }
+  }else{
+    parEsts <- foreach(k=1:nCPU , .combine= rbind,.packages='RRreg') %dopar% { 
+      getParEsts.twoRR(ceiling(numRep/nCPU)) }
+  }
+  stopCluster(cl.tmp)
+}else{
+  if(!twoRR)
+    parEsts <- getParEsts.oneRR(numRep)
+  else
+    parEsts <- getParEsts.twoRR(numRep)
+}
+
+# significance testing of beta coefficients
+#parEsts[,"beta.perctSignif.RRlog"] <- parEsts[,"beta.prob.RRlog"]  <alpha
+parEsts <- as.matrix(parEsts)
+if ("RRlog" %in% method){
+  cutoff <- max(parEsts[,"beta.true"], na.rm=T)
+  parEsts[parEsts[,"beta.RRlog"]>max(10, 5*cutoff),"beta.RRlog"] <- NA
+}
+
+# summarize simulation results
+NAs <-  colSums(is.na(parEsts))
+results <- data.frame(Mean=colMeans(parEsts,na.rm =T),
+                      #                         SE=bs.se(parEsts,)
+                      SE=apply(parEsts,2,sd,na.rm =T)
+)
+####################################### COMPUTE POWER ###########################################
+power <- rep(-1,4) 
+names(power) <-  c("RRuni(z-test)", "RRcor(par_bootstrap)","RRlog(LR-test)","RRlin(Wald-test)")
+if(!twoRR && "RRuni" %in% method){
+  z_val <- parEsts[,"pi.RRuni"] / parEsts[,"piSE.RRuni"]
+  power[1] <- sum( pnorm(z_val,lower.tail=F) < alpha, na.rm =T)/ (nrow(parEsts)-NAs["pi.RRuni"])
+}
+if ("RRcor" %in% method && getPower){
+  simH0 <- RRsimu(numRep=numRep, n=n, pi=pi, model = model, 
+                  p=p, MLest=TRUE, complyRates =complyRates,
+                  sysBias = sysBias, groupRatio=groupRatio, 
+                  method="RRcor",getPower=F, nCPU=nCPU)
+  crit <- quantile(ecdf(abs(simH0$parEsts[,"cor.RRcor"])), 1-alpha)
+  power[2] <- sum(abs(parEsts[,"cor.RRcor"]) > crit, na.rm=T)/
+    (nrow(parEsts)-NAs["cor.RRcor"])
+}
+if ("RRlog" %in% method){
+  prob <- pchisq(parEsts[,"beta.deltaG2.RRlog"], 1, lower.tail=F)
+  power[3] <- sum(prob < alpha, na.rm =T)/ (nrow(parEsts)-NAs["beta.deltaG2.RRlog"])
+}
+if (!twoRR &&"RRlin" %in% method){
+  z_val <- parEsts[,"lincoef.RRlin"] / parEsts[,"lincoefSE.RRlin"]
+  power[4] <- sum( pnorm( abs(z_val), lower.tail=F) < alpha/2, na.rm =T) / (nrow(parEsts)-NAs["lincoef.RRlin"])
+}
+power <- power[power != -1]
+
+
+results <- cbind(results,NAs)
+results <- results[!is.na(results[,1]),]
+parEsts <- parEsts[,NAs!=numRep]
+# filtering for
+# sim$parEsts <- sim$parEsts[sim$parEsts[,"beta.deltaG2.RRlog"]<200,]
+
+sim <- list(parEsts = parEsts, results = results, power = power,
+            model=model,p=p,n=n,numRep=numRep, alpha=alpha,
+            complyRates=complyRates, sysBias=sysBias, groupRatio=groupRatio)
+class(sim) <- "RRsimu"
+sim
 }
 
 
@@ -251,13 +353,18 @@ RRsimu <- function(numRep, n, pi, model, p, rho, complyRates=c(1,1),
 #' @export
 print.RRsimu <- function(x,...){
   if (length(x$model) ==1)
-    cat( paste0(x$model," ; n= ",x$n,"; randomization probability: ", gsub(", ",", ",toString(x$p)),"\n" ))
+    cat( paste0(x$model," ; n= ",x$n,"; randomization probability: ", 
+                gsub(", ",", ",toString(x$p)),"\n" ))
   if (length(x$model) ==2){
-    cat( paste0("\n",x$model[1]," ; n= ",x$n,"; randomization probability: ",gsub(", ",", ",toString(x$p[[1]]))))
-    cat( paste0("\n",x$model[2]," ; n= ",x$n,"; randomization probability: ",gsub(", ",", ",toString(x$p[[2]])),"\n" ))
+    cat( paste0("\n",x$model[1]," ; n= ",x$n,"; randomization probability: ",
+                gsub(", ",", ",toString(x$p[[1]]))))
+    cat( paste0("\n",x$model[2]," ; n= ",x$n,"; randomization probability: ",
+                gsub(", ",", ",toString(x$p[[2]])),"\n" ))
   }  
-  cat(paste0("\n(",x$numRep," replications)\n"))
+  cat(paste0("\nMean estimates and SEs (",x$numRep," replications):\n"))
   print( round(x$results,5))
+  cat(paste0("\nPower on alpha=",x$alpha," level:\n"))
+  print( round(x$power,5))
 }
 
 # Plot simulation results

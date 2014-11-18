@@ -4,7 +4,7 @@
 #' 
 #'  @param response either vector of responses containing 0 (No) and 1 (Yes) or name of response variable in \code{data}. In Kuk's card playing method (\code{Kuk}), the observed response variable gives the number of red cards. For the Forced Response (\code{FR}) model, response values are integers from 0 to (m-1), where 'm' is the number of response categories. 
 #'  @param data optional \code{data.frame} containing the response variable
-#'  @param model choose RR model, e.g., \code{Warner}, \code{UQTknown}, or \code{SLD}. See \code{vignette('RRreg')} for an overview of the available models
+#'  @param model choose RR model. Available models: \code{"Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD", "mix.norm", "mix.exp","mix.unknown"}. See \code{vignette('RRreg')} for detailed specifications.
 #'  @param p randomization probability. For the Cheating Detection Model (\code{CDM}) or the Stochastic Lie Detector (\code{SLD}): a vector with two values. For the Forced Response model (\code{FR}): a vector of the length of the number of categories
 #'  @param group a group vector of the same length as \code{response} containing values 1 or 2, only required for two-group models, which specify different randomization probabilities for two groups, e.g., \code{CDM} or \code{SLD}. If a data.frame \code{data} is provided, the variable \code{group} is searched within it.
 #' @param MLest if \code{TRUE}, least-squares estimates of pi outside of [0,1] are corrected to obtain maximum likelihood estimates
@@ -24,17 +24,17 @@
 #' analyse2 <- RRuni(response=genData2$response, model="SLD", p=c(.2,.8), group=genData2$group)
 #' summary(analyse2)
 #' @export
-RRuni<-function(response, data,
-                model = c("Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD"),
-                p,group = NULL, MLest=TRUE){
+RRuni<-function(response, data, model, p,group = NULL, MLest=TRUE){
   # extract column 'response' from data.frame 'data'
   if ( !missing(data)){
     try( {data <- as.data.frame(data)
           response <-  eval(substitute(response),data, parent.frame())
           })
   }
-  model <- match.arg(model)
-  if ( model %in% c("SLD","CDM","CDMsym","UQTunknown") &&  !missing(data) ){
+  model <- match.arg(model, c("Warner","UQTknown","UQTunknown","Mangat","Kuk",
+                       "FR","Crosswise","CDM","CDMsym","SLD", "mix.norm", 
+                       "mix.exp","mix.unknown"))
+  if ( is2group(model) &&  !missing(data) ){
       try({data <- as.data.frame(data)
          group <-  eval(substitute(group),data, parent.frame())
            },silent=T)
@@ -51,9 +51,12 @@ RRuni<-function(response, data,
          "Crosswise" = res <- RRuni.Crosswise(response,p),
          "SLD" = res <- RRuni.SLD(response,p,group),
          "CDM" = res <- RRuni.CDM(response,p,group),
-         "CDMsym" = res <- RRuni.CDMsym(response,p,group)
-  )
-  if (MLest){
+         "CDMsym" = res <- RRuni.CDMsym(response,p,group),
+         "mix.norm" = res <- RRuni.mix.norm(response,p),
+         "mix.exp" = res <- RRuni.mix.exp(response,p),
+         "mix.unknown" = res <- RRuni.mix.unknown(response,p, group)
+         )
+  if (MLest && ! (model %in% c("mix.norm","mix.exp", "mix.unknown"))){
     res$pi <- RRcheck.param(res$pi)
     if (model=="UQTunknown"){
       res$piUQ <- RRcheck.param(res$piUQ)
@@ -72,7 +75,7 @@ RRuni<-function(response, data,
 #' @method print RRuni
 #' @export
 print.RRuni<-function(x,...){
-  cat("Call: \n")
+  cat("RR model: \n")
   write(x$call,"")
   cat("\nEstimate of pi:\n")
   write( paste0(round(x$pi,6)," (",round(x$piSE,6),") "),"")
@@ -84,6 +87,9 @@ print.RRuni<-function(x,...){
     write(paste0(round(x$gamma,6), " (",round(x$gammaSE,6),")"),"")
   }else if (x$model == "UQTunknown"){
     cat("\nEstimate for prevalence of unrelated question:\n")
+    write(paste(round(x$piUQ,6), " (",round(x$piUQSE,6),")",sep=""),"")
+  }else if (x$model == "mix.unknown"){
+    cat("\nEstimate for unrelated question:\n")
     write(paste(round(x$piUQ,6), " (",round(x$piUQSE,6),")",sep=""),"")
   }
 }
@@ -129,6 +135,13 @@ summary.RRuni<-function(object,...){
 #               cbind(object$beta,object$betaSE,zval_b,pnorm(-abs(zval_b))),
               cbind(object$gamma,object$gammaSE,zval_g,pnorm(zval_g,lower.tail=F)))
     rownames(TAB)=c("pi","gamma")
+  }
+  if (object$model %in% c("mix.unknown")){
+    zval_g=object$piUQ/object$piUQSE
+    TAB=rbind(TAB,
+              #               cbind(object$beta,object$betaSE,zval_b,pnorm(-abs(zval_b))),
+              cbind(object$piUQ,object$piUQSE,zval_g,pnorm(zval_g,lower.tail=F)))
+    rownames(TAB)=c("pi","piUQ")
   }
   res <- list(call=object$call,n=object$n,
               coefficients=TAB, model=object$model)

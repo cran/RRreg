@@ -215,7 +215,7 @@ hr {
 
 <p>Daniel W. Heck, <a href="mailto:dheck@mail.uni-mannheim.de">dheck@mail.uni-mannheim.de</a></p>
 
-<p>Last update: September 11th, 2014</p>
+<p>Last update: November 18th, 2014</p>
 
 <h2>1) Introduction</h2>
 
@@ -261,12 +261,12 @@ head(data.W)
 </code></pre>
 
 <pre><code>##   true comply response
-## 1    1      1        1
+## 1    1      1        0
 ## 2    0      1        1
-## 3    0      1        0
-## 4    0      1        0
+## 3    1      1        0
+## 4    0      1        1
 ## 5    0      1        1
-## 6    1      1        0
+## 6    0      1        1
 </code></pre>
 
 <p>In the function <code>RRgen</code>, the argument <code>complyRates</code> gives the proportions of participants who do adhere to the RR instructions for carriers and non-carriers of the sensitive attribute, respectively. The argument <code>sysBias</code> gives the probability of <em>yes</em> responses in case of non-compliance for carriers and non-carriers, respectively. If <code>sysBias=c(0,0)</code>, noncomplying individuals always respond with self-protective <em>no</em> responses (also known as SP-&#39;no&#39; responses). In comparison, <code>sysBias=c(0,0.5)</code> indicates that noncomplying non-carriers answer <em>yes</em> or <em>no</em> by chance. However, since we generated data assuming perfect compliance, this argument can be neglected. These options can be used to test how robust the results are against non-adherence.</p>
@@ -281,8 +281,8 @@ summary(warner)
 ## Warner Model with p = 0.2
 ## Sample size: 1000
 ## 
-##    Estimate StdErr    z Pr(&gt;|z|)    
-## pi   0.3033 0.0256 11.8   &lt;2e-16 ***
+##    Estimate   StdErr      z  Pr(&gt;|z|)    
+## pi 0.281667 0.025432 11.075 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 </code></pre>
@@ -311,13 +311,10 @@ data.W$cov[data.W$true==0] &lt;- rnorm(sum(data.W$true == 0))
 
 <p>Now, we can estimate the bivariate (point-biserial) correlation between the dichotomous Warner RR variable and the continuous covariate:</p>
 
-<pre><code class="r">RRcor(x=data.W$response, y=data.W$cov, models=c(&quot;Warner&quot;, &quot;direct&quot;), p.list=list(.2), bs.n=0, bs.type = c(&quot;n&quot;, &quot;p&quot;), nCPU=1)
+<pre><code class="r">RRcor(x=data.W$response, y=data.W$cov, models=c(&quot;Warner&quot;, &quot;direct&quot;), p.list=list(.2), bs.n=0, bs.type = c(&quot;se.n&quot;, &quot;se.p&quot;, &quot;pval&quot;), nCPU=1)
 </code></pre>
 
-<pre><code>## Call: 
-## Randomized response correlation
-## 
-## Randomized response variables:
+<pre><code>## Randomized response variables:
 ##   Variable        RRmodel p   
 ## 1 data.W$response Warner   0.2
 ## 2 data.W$cov      direct      
@@ -326,16 +323,16 @@ data.W$cov[data.W$true==0] &lt;- rnorm(sum(data.W$true == 0))
 ## 
 ## Estimated correlation matrix:
 ##                 data.W$response data.W$cov
-## data.W$response           1.000      0.426
-## data.W$cov                0.426      1.000
+## data.W$response        1.000000   0.423463
+## data.W$cov             0.423463   1.000000
 </code></pre>
 
-<p>The argument <code>models</code> defines which variables given by <code>x</code> and <code>y</code> are treated as RR variables. <code>x</code> and <code>y</code> can be vectors and/or data frames/matrices having one variable in each column (the order is then given as following: First, columns of <code>x</code> from left to right, and second, columns of <code>y</code> from left to right). The randomization probabilities <code>p.list</code> have to be in the same order as <code>models</code>. No values have to be specified for direct (nonRR) variables. To obtain bootstrapped standard errors, <code>bs.n</code> has to be set to a number of bootstrap replications larger than 0. Additionally, <code>bs.type</code> defines which kind of bootstrap should be performed (nonparametric and/or parametric). For faster processing, <code>nCPU</code>can be increased to use parallel computation. In our example, we also know the true states of the participants in the data set and can check the results by:</p>
+<p>The argument <code>models</code> defines which variables given by <code>x</code> and <code>y</code> are treated as RR variables. <code>x</code> and <code>y</code> can be vectors and/or data frames/matrices having one variable in each column (the order is then given as following: First, columns of <code>x</code> from left to right, and second, columns of <code>y</code> from left to right). The randomization probabilities <code>p.list</code> have to be in the same order as <code>models</code>. No values have to be specified for direct (nonRR) variables. To obtain bootstrapped standard errors, <code>bs.n</code> has to be set to a number of bootstrap replications larger than 0. Additionally, <code>bs.type</code> defines which kind of bootstrap should be performed (<code>&quot;se.n&quot;</code>, <code>&quot;se.p&quot;</code>: nonparametric/parametric for standard errors; <code>&quot;pval&quot;</code> parametric bootstrap assuming independence for p-values). For faster processing, <code>nCPU</code>can be increased to use parallel computation. In our example, we also know the true states of the participants in the data set and can check the results by:</p>
 
 <pre><code class="r">cor(x=data.W$true, y=data.W$cov)
 </code></pre>
 
-<pre><code>## [1] 0.4132
+<pre><code>## [1] 0.4578229
 </code></pre>
 
 <ul>
@@ -350,27 +347,27 @@ data.W$cov[data.W$true==0] &lt;- rnorm(sum(data.W$true == 0))
 
 <p>Alternatively, we can run a logistic regression to predict the probability of cocaine use. In the <code>formula</code> below, the Warner RR variable is defined as criterion on the left side, whereas the continuous covariate is used as predictor on the right. The interface is similar to that of the standard linear regression in R (i.e., <code>lm()</code>).</p>
 
-<pre><code class="r">log1 &lt;- RRlog(formula=response~cov, data=data.W, model=&quot;Warner&quot;, p=.2, LR.test=TRUE)
+<pre><code class="r">log1 &lt;- RRlog(formula=response~cov, data=data.W, model=&quot;Warner&quot;, p=.2, LR.test=TRUE, fit.n = c(1,5))
 summary(log1)
 </code></pre>
 
 <pre><code>## Call:
 ## RRlog.formula(formula = response ~ cov, data = data.W, model = &quot;Warner&quot;, 
-##     p = 0.2, LR.test = TRUE)
+##     p = 0.2, LR.test = TRUE, fit.n = c(1, 5))
 ## 
 ## Model:
 ## Warner with p = 0.2
 ## 
 ## Model fit:
-##     n logLik
-##  1000 -635.6
+##     n    logLik
+##  1000 -629.6518
 ## 
-##             Estimate StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2 Pr(&gt;deltaG2)
-## (Intercept)   -1.300  0.185    49.642          0.000    89.8       &lt;2e-16
-## cov            0.968  0.164    34.818          0.000    59.0       &lt;2e-16
-##                
-## (Intercept) ***
-## cov         ***
+##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
+## (Intercept) -1.43610  0.20052  51.29028        0.00000 104.062
+## cov          0.95707  0.16456  33.82494        0.00000  57.539
+##             Pr(&gt;deltaG2)    
+## (Intercept)    &lt; 2.2e-16 ***
+## cov            &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 </code></pre>
@@ -386,11 +383,11 @@ summary(log1)
 ## 
 ## Coefficients:
 ## (Intercept)          cov  
-##       -1.38         1.01  
+##      -1.415        1.130  
 ## 
 ## Degrees of Freedom: 999 Total (i.e. Null);  998 Residual
-## Null Deviance:       1220 
-## Residual Deviance: 1030  AIC: 1030
+## Null Deviance:       1232 
+## Residual Deviance: 995.5     AIC: 999.5
 </code></pre>
 
 <ul>
@@ -405,44 +402,13 @@ summary(log1)
 
 <p>Third, we can use the Warner RR variable as predictor in a linear regression:</p>
 
-<pre><code class="r">lin1 &lt;- RRlin(formula=cov~response, data=data.W, models=&quot;Warner&quot;, p.list=.2, bs.n=0)
+<pre><code class="r">lin1 &lt;- RRlin(formula=cov~response, data=data.W, models=&quot;Warner&quot;, p.list=.2, bs.n=0, fit.n=1)
 summary(lin1)
 </code></pre>
 
 <pre><code>## Call:
 ## RRlin(formula = cov ~ response, data = data.W, models = &quot;Warner&quot;, 
-##     p.list = 0.2, bs.n = 0)
-## 
-## Randomized response variables:
-##   Variable Model  p  
-## 1 response Warner 0.2
-## 
-## Coefficients (beta):
-##             Estimate StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)   0.0280 0.0485      0.33           0.56    
-## response      0.9535 0.1159     67.66         &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error (sigma): 0.997; N=1000
-## 
-## Prevalence estimates for combinations of RR responses:
-##   Estimate StdErr
-## 0    0.694   0.03
-</code></pre>
-
-<p>As in <code>RRcor</code>, bootstrapped standard errors can be obtained by setting <code>bs.n</code> to the number of bootstrap replications. The order of the RR models is defined by <code>models</code> and <code>p.list</code>. For instance, given three RR variables <code>rr1</code>, <code>rr2</code>, and <code>rr3</code> and two non-RR/direct variables <code>x1</code> and <code>x2</code>, the model could be specified by <code>formula = y ~ rr1 + x1 + rr2 + rr3 + x2</code> and <code>models=c(&#39;Warner&#39;, &#39;direct&#39;, &#39;Warner&#39;, &#39;Warner&#39;, &#39;direct&#39;)</code>. Note that the predictors in <code>formula</code> can either be vectors or column names of variables in the data frame <code>data</code>.</p>
-
-<p>As a special case, if the number of predictors used in the formula interface is larger than the number of RR variables specified in <code>models</code>, the remaining predictors are treated as directly measured, non-RR variables:</p>
-
-<pre><code class="r">data.W$pred &lt;- rnorm(1000)
-lin2 &lt;- RRlin(formula=cov~response + pred, data=data.W, models=&quot;Warner&quot;, p.list=list(.2), bs.n=0)
-summary(lin2)
-</code></pre>
-
-<pre><code>## Call:
-## RRlin(formula = cov ~ response + pred, data = data.W, models = &quot;Warner&quot;, 
-##     p.list = list(0.2), bs.n = 0)
+##     p.list = 0.2, bs.n = 0, fit.n = 1)
 ## 
 ## Randomized response variables:
 ##   Variable Model  p  
@@ -450,17 +416,48 @@ summary(lin2)
 ## 
 ## Coefficients (beta):
 ##             Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)  0.02785 0.04854      0.33           0.57    
-## response     0.95413 0.11599     67.66         &lt;2e-16 ***
-## pred         0.00455 0.03382      0.02           0.89    
+## (Intercept)  0.02465 0.04872     0.256         0.6129    
+## response     0.99800 0.12362    65.179         &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 0.997; N=1000
+## Residual standard error (sigma): 1.038; N=1000
 ## 
 ## Prevalence estimates for combinations of RR responses:
 ##   Estimate StdErr
-## 0    0.694   0.03
+## 0   0.7164 0.0248
+</code></pre>
+
+<p>As in <code>RRcor</code>, bootstrapped standard errors can be obtained by setting <code>bs.n</code> to the number of bootstrap replications. The order of the RR models is defined by <code>models</code> and <code>p.list</code>. For instance, given three RR variables <code>rr1</code>, <code>rr2</code>, and <code>rr3</code> and two non-RR/direct variables <code>x1</code> and <code>x2</code>, the model could be specified by <code>formula = y ~ rr1 + x1 + rr2 + rr3 + x2</code> and <code>models=c(&#39;Warner&#39;, &#39;direct&#39;, &#39;Warner&#39;, &#39;Warner&#39;, &#39;direct&#39;)</code>. Note that the predictors in <code>formula</code> can either be vectors or column names of variables in the data frame <code>data</code>.</p>
+
+<p>As a special case, if the number of predictors used in the formula interface is larger than the number of RR variables specified in <code>models</code>, the remaining predictors are treated as directly measured, non-RR variables:</p>
+
+<pre><code class="r">data.W$pred &lt;- rnorm(1000)
+lin2 &lt;- RRlin(formula=cov~response + pred, data=data.W, models=&quot;Warner&quot;, p.list=list(.2), bs.n=0, fit.n=1)
+summary(lin2)
+</code></pre>
+
+<pre><code>## Call:
+## RRlin(formula = cov ~ response + pred, data = data.W, models = &quot;Warner&quot;, 
+##     p.list = list(0.2), bs.n = 0, fit.n = 1)
+## 
+## Randomized response variables:
+##   Variable Model  p  
+## 1 response Warner 0.2
+## 
+## Coefficients (beta):
+##             Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)    
+## (Intercept)  0.02290 0.04876    0.2205         0.6386    
+## response     1.00308 0.12402   65.4174         &lt;2e-16 ***
+## pred         0.02672 0.03399    0.6182         0.4317    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error (sigma): 1.037; N=1000
+## 
+## Prevalence estimates for combinations of RR responses:
+##   Estimate StdErr
+## 0  0.71652 0.0248
 </code></pre>
 
 <p>To check the results of the simulation, run:</p>
@@ -474,7 +471,7 @@ summary(lin2)
 ## 
 ## Coefficients:
 ## (Intercept)         true         pred  
-##      0.0271       0.9860      -0.0135
+##    -0.03652      1.12411      0.01476
 </code></pre>
 
 <p>It is also possible to include several RR variables as predictors if the randomization devices used are stochastically independent: </p>
@@ -482,13 +479,13 @@ summary(lin2)
 <pre><code class="r">data.W2 &lt;- RRgen(n=1000, pi.true=.45, model=&quot;Warner&quot;, p=.35)
 data.W$cov &lt;-2*data.W$true - 3*data.W2$true+ rnorm(1000,1,5)
 data.W$response2 &lt;- data.W2$response
-lin3 &lt;- RRlin(cov ~ response + response2, data=data.W, models=c(&quot;Warner&quot;, &quot;Warner&quot;), p.list=list(.2, .35))
+lin3 &lt;- RRlin(cov ~ response + response2, data=data.W, models=c(&quot;Warner&quot;, &quot;Warner&quot;), p.list=list(.2, .35), fit.n=1)
 summary(lin3)
 </code></pre>
 
 <pre><code>## Call:
 ## RRlin(formula = cov ~ response + response2, data = data.W, models = c(&quot;Warner&quot;, 
-##     &quot;Warner&quot;), p.list = list(0.2, 0.35))
+##     &quot;Warner&quot;), p.list = list(0.2, 0.35), fit.n = 1)
 ## 
 ## Randomized response variables:
 ##   Variable  Model  p   
@@ -496,20 +493,20 @@ summary(lin3)
 ## 2 response2 Warner 0.35
 ## 
 ## Coefficients (beta):
-##             Estimate StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)   -0.191  0.511      0.14        0.70793    
-## response       2.799  0.743     14.20        0.00016 ***
-## response2     -1.641  1.226      1.79        0.18063    
+##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)  
+## (Intercept)  0.77148  0.61042    1.5973        0.20629  
+## response     2.02179  0.91731    4.8578        0.02752 *
+## response2   -2.97308  1.23539    5.7917        0.01610 *
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 5.171; N=1000
+## Residual standard error (sigma): 5; N=1000
 ## 
 ## Prevalence estimates for combinations of RR responses:
 ##     Estimate StdErr
-## 0:0    0.434   0.06
-## 0:1    0.264   0.06
-## 1:0    0.168   0.05
+## 0:0  0.41821 0.0577
+## 0:1  0.29928 0.0562
+## 1:0  0.17040 0.0548
 </code></pre>
 
 <p>Besides the regression output, the function <code>summary</code> also provides &#39;Prevalence estimates for combinations of RR responses&#39;. In our example using two Warner variables, the combination 0:0 indicates the sub-group having neither of both sensitive attributes and shows the corresponding prevalence estimate. Similarly, the combination 0:1 indicates the sub-group having only the second sensitive attribute and so on. Note that the last combination 1:1 is not provided and can be calculated by summing up all other prevalence estimates and substracting this sum from 1.</p>
@@ -541,7 +538,7 @@ group &lt;- rep(1:0, each=500)
 # include interaction of question format and age (here, the rescaled z-variable z.age)
 z.age &lt;- c(rnorm(500, mean=RR$true*2,sd=3), rnorm(500, mean=0,sd=3))
 # fit full model (i.e., test difference in prevalence estimates and interaction)
-fit &lt;- RRlog(response ~ group * z.age, model=&quot;Warner&quot;, p=.35, group=group, LR.test=TRUE) 
+fit &lt;- RRlog(response ~ group * z.age, model=&quot;Warner&quot;, p=.35, group=group, LR.test=TRUE, fit.n = c(1,5)) 
 </code></pre>
 
 <pre><code>## Warning: The group vector contains 2 categories, which are interpreted as
@@ -553,25 +550,25 @@ fit &lt;- RRlog(response ~ group * z.age, model=&quot;Warner&quot;, p=.35, group
 
 <pre><code>## Call:
 ## RRlog.formula(formula = response ~ group * z.age, model = &quot;Warner&quot;, 
-##     p = 0.35, group = group, LR.test = TRUE)
+##     p = 0.35, group = group, LR.test = TRUE, fit.n = c(1, 5))
 ## 
 ## Model:
 ## Warner with p = 0.35 (n=500) combined with DQ (n=500)
 ## 
 ## Model fit:
-##     n logLik
-##  1000 -605.7
+##     n    logLik
+##  1000 -594.3782
 ## 
-##              Estimate    StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
-## (Intercept)  -1.28777   0.10888 139.88287        0.00000  170.23
-## group         0.73764   0.36501   4.08399        0.04329    2.96
-## z.age         0.00668   0.03575   0.03486        0.85189    0.03
-## group:z.age   0.11424   0.11173   1.04554        0.30654    1.12
+##              Estimate    StdErr Wald test Pr(&gt;Chi2,df=1)  deltaG2
+## (Intercept)  -1.35186   0.11135 147.40171        0.00000 183.2859
+## group         0.62177   0.38632   2.59036        0.10752   1.9802
+## z.age         0.07647   0.03848   3.94808        0.04692   4.0053
+## group:z.age   0.21310   0.17742   1.44261        0.22972   2.3697
 ##             Pr(&gt;deltaG2)    
-## (Intercept)       &lt;2e-16 ***
-## group              0.085 .  
-## z.age              0.852    
-## group:z.age        0.289    
+## (Intercept)      &lt; 2e-16 ***
+## group            0.15937    
+## z.age            0.04536 *  
+## group:z.age      0.12371    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 </code></pre>
@@ -581,14 +578,14 @@ logit1 &lt;- coef(fit) %*% c(1, 1, mean(z.age), mean(z.age))
 cat(exp(logit1) / (1+ exp(logit1)))
 </code></pre>
 
-<pre><code>## 0.3749
+<pre><code>## 0.3506064
 </code></pre>
 
 <pre><code class="r">logit2 &lt;- coef(fit) %*% c(1, 0, mean(z.age), 0)
 cat(exp(logit2) / (1+ exp(logit2)))
 </code></pre>
 
-<pre><code>## 0.2166
+<pre><code>## 0.2105143
 </code></pre>
 
 <p>&nbsp; </p>
@@ -661,13 +658,13 @@ cat(exp(logit2) / (1+ exp(logit2)))
 
 <p><img src="data:image/jpeg;base64,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" alt="title"/></p>
 
-<p>The FR model can easily be extended to account for more than two response categories. For instance, responses can be given on a 5-point Likert scale from 0 to 4. For these categories, the randomization probabilities, determining the proportion of forced responses, are provided in a vector <code>p=c(p[1], p[2],...,p[5])</code>. The sum of these probabilities must be smaller than one. This polytomous RR model can be used with the functions <code>RRgen</code>, <code>RRuni</code>, <code>RRcor</code>, and <code>RRlin</code>. Only the logistic RR regression <code>RRlog</code> requires a dichotomous response format for the FR method.</p>
+<p>The FR model can easily be extended to account for more than two response categories. For instance, responses can be given on a 5-point Likert scale from 0 to 4. For these categories, the randomization probabilities, determining the proportion of forced responses, are provided in a vector <code>p=c(p[1], p[2],...,p[5])</code>. The sum of these probabilities must be smaller than one. This polytomous RR model can be used with the functions <code>RRgen</code>, <code>RRuni</code>, <code>RRcor</code>, and <code>RRlin</code> (the logistic RR regression <code>RRlog</code> requires a dichotomous response format).</p>
 
 <p>The following code snippets illustrate, how the FR method is used with multiple response categories:</p>
 
 <ul>
 <li><code>RRgen(n=1000, pi.true=c(.3,.1,.4,.2), model=&quot;FR&quot;, p=c(.1,.1,.2,.05))</code></li>
-<li><code>RRlin(criterion~response, data=dat, models=&quot;FR&quot;,p.list=list(c(.1,.1,.2,.05)))</code></li>
+<li><code>RRlin(criterion~response, data=dat, models=&quot;FR&quot;,p.list=list(c(.1,.1,.2,.05)), fit.n=1)</code></li>
 </ul>
 
 <p>For data generation of a polytomous FR model using <code>RRgen</code>, the arguments <code>complyRates</code> and <code>sysBias</code> have the following definition:</p>
@@ -716,7 +713,7 @@ cat(exp(logit2) / (1+ exp(logit2)))
 
 <p>For these two-group models, the functions <code>RRuni</code>, <code>RRcor</code>, <code>RRlog</code>, and <code>RRlin</code> additionally require a vector <code>group</code> with values in 1 and 2, indicating the group membership of each respondent. If more than one RR variable is in the model, <code>group</code> is specified by a matrix containing the corresponding group vectors (one in each column) in the same order as the RR variables appear in the model. Moreover, the randomization probability <code>p</code> often specifies different values for the two groups. Code examples are given in <a href="#two-group-code-example">Section 5.5</a>.</p>
 
-<p>Note that in the functions <code>RRcor</code> and <code>RRlin</code>, the second parameter of these two-group models is estimated first and then treated as a fixed constant in further computations. Ideally, the second parameter should be treated as an additional, free parameter in the optimization routine (this is the case for the function <code>RRlog</code>). However, simulations show that the results are still adequate. Use <code>RRsimu</code> to run such a simulation for <code>RRcor</code> yourself. Furthermore, <code>RRcor</code> uses only the most informative subgroup of a two-group RR variable (e.g., for SLD, the group with the larger randomization probability <code>p</code>). According to simulations, this provides better results than averaging estimated correlations across subgroups.</p>
+<p>Note that in the functions <code>RRcor</code> and <code>RRlin</code>, the second parameter of these two-group models is estimated first and then treated as a fixed constant in further computations. For the maximum likelihood estimation in <code>RRlin</code>, the second parameter should ideally be included as an additional, free parameter to provide unbiased standard errors (this is the case for the function <code>RRlog</code>). However, simulations show that the results are still adequate. <code>RRsimu</code> can be used to run such a simulations yourself and get bootstrapped standard errors.</p>
 
 <p>&nbsp;</p>
 
@@ -840,29 +837,29 @@ RR2 &lt;- RRgen(1000, pi=.6, model=&quot;SLD&quot;, p=c(.3 ,.7), complyRates=c(.
 cov &lt;- RR1$true + RR2$true + rnorm(1000, 0, 3)
 
 ### logistic regression (dependent RR variable)
-logmod &lt;- RRlog(RR1$response ~ cov, model=&quot;SLD&quot;, p=c(.2,.8), group=RR1$group)
+logmod &lt;- RRlog(RR1$response ~ cov, model=&quot;SLD&quot;, p=c(.2,.8), group=RR1$group, fit.n = c(1,5))
 summary(logmod)
 </code></pre>
 
 <pre><code>## Call:
 ## RRlog.formula(formula = RR1$response ~ cov, model = &quot;SLD&quot;, p = c(0.2, 
-##     0.8), group = RR1$group)
+##     0.8), group = RR1$group, fit.n = c(1, 5))
 ## 
 ## Model:
 ## SLD with p1 = 0.2; p2 = 0.8
 ## 
 ## Model fit:
-##     n logLik
-##  1000 -589.1
+##     n    logLik
+##  1000 -590.9531
 ## 
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
-## (Intercept) -0.61557  0.21313   8.34146        0.00388    8.99
-## cov          0.14344  0.05709   6.31360        0.01198    7.67
-## t            0.78655  0.04314  24.47754        0.00000   14.20
+## (Intercept) -0.35516  0.19800   3.21759        0.07285  3.2543
+## cov          0.08676  0.05058   2.94296        0.08625  3.1571
+## t            0.80583  0.04079  22.66060        0.00000 13.8781
 ##             Pr(&gt;deltaG2)    
-## (Intercept)      0.00272 ** 
-## cov              0.00562 ** 
-## t                0.00016 ***
+## (Intercept)      0.07124 .  
+## cov              0.07560 .  
+## t                0.00020 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -879,36 +876,30 @@ colnames(responses) &lt;- c(&quot;RR1&quot;, &quot;RR2&quot;, &quot;cov&quot;)
 RRcor( responses, models=c(&quot;SLD&quot;,&quot;SLD&quot;,&quot;direct&quot;), p.list=list(c(.2,.8), c(.3, .7)), group=group)
 </code></pre>
 
-<pre><code>## Call: 
-## Randomized response correlation
-## 
-## Randomized response variables:
+<pre><code>## Randomized response variables:
 ##   Variable RRmodel p       
 ## 1 RR1      SLD      0.2 0.8
 ## 2 RR2      SLD      0.3 0.7
 ## 3 cov      direct          
 ## 
-## Sample size N:
-##      RR1  RR2  cov
-## RR1 1000  500  500
-## RR2  500 1000  500
-## cov  500  500 1000
+## Sample size N = 1000 
 ## 
 ## Estimated correlation matrix:
-##        RR1     RR2     cov
-## RR1 1.0000 0.10574 0.20638
-## RR2 0.1057 1.00000 0.09835
-## cov 0.2064 0.09835 1.00000
+##         RR1      RR2      cov
+## RR1 1.00000       NA 0.130780
+## RR2      NA 1.000000 0.120249
+## cov 0.13078 0.120249 1.000000
 </code></pre>
 
 <pre><code class="r"># linear model with 2 RR predictors
-linmod &lt;- RRlin(cov ~ RR1$response+RR2$response, models=c(&quot;SLD&quot;,&quot;SLD&quot;), p.list=list(c(.2,.8), c(.3, .7)), group=group)
+linmod &lt;- RRlin(cov ~ RR1$response+RR2$response, models=c(&quot;SLD&quot;,&quot;SLD&quot;), p.list=list(c(.2,.8), c(.3, .7)), group=group, fit.n=1)
 summary(linmod)
 </code></pre>
 
 <pre><code>## Call:
 ## RRlin(formula = cov ~ RR1$response + RR2$response, models = c(&quot;SLD&quot;, 
-##     &quot;SLD&quot;), p.list = list(c(0.2, 0.8), c(0.3, 0.7)), group = group)
+##     &quot;SLD&quot;), p.list = list(c(0.2, 0.8), c(0.3, 0.7)), group = group, 
+##     fit.n = 1)
 ## 
 ## Randomized response variables:
 ##   Variable     Model p          
@@ -916,20 +907,20 @@ summary(linmod)
 ## 2 RR2$response SLD   c(0.3, 0.7)
 ## 
 ## Coefficients (beta):
-##              Estimate StdErr Wald test Pr(&gt;Chi2,df=1)   
-## (Intercept)     0.275  0.262      1.10         0.2946   
-## RR1$response    1.257  0.482      6.79         0.0092 **
-## RR2$response    0.523  0.353      2.20         0.1380   
+##              Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)  
+## (Intercept)  -0.03155  0.44413    0.0050        0.94337  
+## RR1$response  0.84728  0.46160    3.3692        0.06643 .
+## RR2$response  0.88092  0.50811    3.0057        0.08297 .
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 3.08; N=1000
+## Residual standard error (sigma): 3.054; N=1000
 ## 
 ## Prevalence estimates for combinations of RR responses:
 ##     Estimate StdErr
-## 0:0    0.310   0.04
-## 0:1    0.305   0.04
-## 1:0    0.149   0.03
+## 0:0  0.15622 0.0364
+## 0:1  0.41225 0.0431
+## 1:0  0.13725 0.0342
 </code></pre>
 
 </body>

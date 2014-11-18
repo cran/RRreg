@@ -1,3 +1,13 @@
+RRreg 0.2.0 (November 2014)
+===========
+
+* new function powerplot() to plot power of the three implemented multivariate RR methods
+* bootstrapped p-values in RRcor and correlations bound to [-1,1]
+* random starting values and repeated optimization in RRlin
+* RRsimu: increased stability; RRlin included; generating data for RRcor and RRlog separately; estimation of power
+* continuous mixture RR models: "mix.norm" and "mix.exp" added to RRgen, RRuni, and RRcor, "mix.unknown" added to RRuni and RRcor
+
+
 RRreg 0.1.3 (September 2014)
 ===========
 

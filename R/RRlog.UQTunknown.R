@@ -8,7 +8,7 @@ RRlog.UQTunknown <- function(x,y,p,start,group,setPiUQ=FALSE, maxit=1000){
   tryCatch(
 {est <- optim(par=start,fn=RRlog.UQTunknown.ll,
               gr=RRlog.UQTunknown.llgrad, 
-               method="L-BFGS-B",
+#                method="L-BFGS-B",
               lower = c(rep(-Inf,ncol(x)),0), 
               upper = c(rep( Inf,ncol(x)),1),
               control=list(fnscale=-1, maxit=maxit),hessian=T,  

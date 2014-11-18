@@ -3,16 +3,15 @@
 \alias{RRgen}
 \title{Generate randomized response data}
 \usage{
-RRgen(n, pi.true, model = c("Warner", "UQTknown", "UQTunknown", "Mangat",
-  "Kuk", "FR", "Crosswise", "CDM", "CDMsym", "SLD"), p, complyRates = c(1, 1),
-  sysBias = c(0, 0), groupRatio = 0.5, Kukrep = 1, trueState = NULL)
+RRgen(n, pi.true, model, p, complyRates = c(1, 1), sysBias = c(0, 0),
+  groupRatio = 0.5, Kukrep = 1, trueState = NULL)
 }
 \arguments{
 \item{n}{sample size of generated data}
 
 \item{pi.true}{true proportion in population}
 
-\item{model}{specifying a RR model, see \code{\link{RRuni}} for details about RR models}
+\item{model}{specifes the RR model, one of: \code{"Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD", "mix.norm", "mix.exp"}. See \code{vignette("RRreg")} for details.}
 
 \item{p}{randomization probability (depending on model, either a real value or vector, see \code{\link{RRuni}} for details)}
 
@@ -20,7 +19,7 @@ RRgen(n, pi.true, model = c("Warner", "UQTknown", "UQTunknown", "Mangat",
 
 \item{sysBias}{probability of responding 'yes' (coded as 1) in case of non-compliance for carriers and non-carriers of the sensitive attribute, respectively. If \code{sysBias=c(0,0)}, carriers and non-carriers systematically give the nonsensitive response 'no' (also known as self-protective(SP)-'no' responses). If \code{sysBias=c(0,0.5)}, carriers always respond 'no' whereas non-carriers randomly select a response category. Note that \code{sysBias = c(0.5,0.5)} might be the best choice for \code{Kuk} and \code{Crosswise}. For the m-categorical \code{FR} model, \code{sysBias} can be given as a probability vector for categories 0 to (m-1).}
 
-\item{groupRatio}{only required for multiple group models, e.g., \code{SLD} and \code{CDM}}
+\item{groupRatio}{proportion of participants in group 1. Only required for two-group models, e.g., \code{SLD} and \code{CDM}}
 
 \item{Kukrep}{Number of repetitions of Kuk's procedure (how often red and black cards are drawn)}
 
@@ -58,6 +57,6 @@ genData <- RRgen(n=1000, pi.true=.2, model="SLD", p=c(.2,.8),
 colMeans(genData)
 }
 \seealso{
-\code{\link{RRuni}} for a detailed description of the models and \code{\link{RRlog}} and \code{\link{RRcor}} for the multivariate analysis of RR data
+see \code{vignette('RRreg')} for a detailed description of the models and \code{\link{RRlog}}, \code{\link{RRlin}} and \code{\link{RRcor}} for the multivariate analysis of RR data
 }
 

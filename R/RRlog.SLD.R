@@ -5,21 +5,19 @@ RRlog.SLD <- function(x,y,p,start,group,setT=FALSE, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
-  tryCatch(
-{est <- optim(par=start,fn=RRlog.SLD.ll,
-              gr=RRlog.SLD.llgrad, 
-              method="L-BFGS-B",
-              lower = c(rep(-Inf,ncol(x)),0), 
-              upper = c(rep( Inf,ncol(x)),1),
-              control=list(fnscale=-1, maxit=maxit),hessian=T,  
-              cov=x,y=y,prand=p,group=group,setT=setT)
- grad <- RRlog.SLD.llgrad(est$par,x,y,p,group,setT)
- logLik=est$value;
- coef=est$par;
- iter=est$counts;
- hessian=est$hessian
-}
-,error = function(e) {})
+  try({est <- optim(par=start,fn=RRlog.SLD.ll,
+                    gr=RRlog.SLD.llgrad, 
+                    method="L-BFGS-B",
+                    lower = c(rep(-Inf,ncol(x)),0), 
+                    upper = c(rep( Inf,ncol(x)),1),
+                    control=list(fnscale=-1, maxit=maxit),hessian=T,  
+                    cov=x,y=y,prand=p,group=group,setT=setT)
+       grad <- RRlog.SLD.llgrad(est$par,x,y,p,group,setT)
+       logLik=est$value;
+       coef=est$par;
+       iter=est$counts;
+       hessian=est$hessian
+  },silent=T)
   
 #   print(grad)
 #   print(grad(func=RRlog.SLD.ll,x=est$par,cov=x,y=y,prand=p,group=group,setT=setT))

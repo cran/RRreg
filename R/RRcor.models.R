@@ -13,46 +13,30 @@ get.x.est <- function(z,model,p,par2,group){
 
 ## in coming call for selection: get.quotient(X[sel,i],models[i],p.list[[i]], par2, group=1)
 # => response z within group 1 etc
-get.quotient <- function(z,model,p,par2, group){
-#   pt <- 0
-#   y.mu <- 0
-#   x.est <- get.x.est (z,model,p,par2,group)
-#    y.var <- 0
-#   n <- c(sum(group==1),sum(group==2))
-#   for (i in 1:length(table(group))){
-#     pt2 <- p.truth(model,p,par2,i)*n[i]/sum(n)
-#     pt2 <- ifelse(pt2<0,-pt2,pt2)
-#     pt <- pt+pt2
-#     y.mu <- y.mu+y.mean(model,p,par2,i)*n[i]/sum(n)
-# #     print(y.mu)
-# #     print(pt)
-# #     y.var <- y.var +y.variance(y.mu,model,p)*n[i]/sum(n)
-#   }
-  x.est <- get.x.est (z,model,p,par2,rep(group,length(z)) )
+get.quotient <- function(z,model,p,par2, group, pi, piVar){
   pt <- p.truth(model,p,par2,group)
+  # second, irrelevant distribution y
   y.mu <- y.mean(model,p,par2,group)
-  y.var <- y.variance(y.mu,model,p)
+  y.var <- y.variance(y.mu,model,p,par2)
   
-  x.mu <- mean(x.est)   # single group: x.mu <- (mean(z)-(1-pt)*y.mu)/pt
-#   print(x.mu)
-#   print((mean(z)-(1-pt)*y.mu)/pt)
-  # NOT VARIANCE OF x.est !!!!! => VARIANCE OF TRUE VALUES NEEDED !!!
-  x.var <- (var(z)-pt*(1-pt)*(x.mu-y.mu)^2 - (1-pt)*y.var)/pt
-  
-#   print( var(x.est))
-#   print((var(z)-pt*(1-pt)*(x.mu-y.mu)^2 - (1-pt)*y.var)/pt)
-  
-# single:  x.var <- (var(z)-pt*(1-pt)*(x.mu-y.mu)^2 - (1-pt)*y.var)/pt
-  # mask (in paper u): masking distribution (mask.mu = 0)
+  # sensitive attribute x
+#   if (model =="FR"){
+#     x.est <- get.x.est (z,model,p,par2,rep(group,length(z)) )
+#     x.mu <- mean(x.est)
+#     x.var <- (var(z)-pt*(1-pt)*(x.mu-y.mu)^2 - (1-pt)*y.var)/pt
+#     print("in cor.models")
+#     print(x.mu)
+#     print(x.var)
+#   }else{
+    # sensitive attribute x: take mean and variance from both groups!!!
+    x.mu <- pi
+    x.var <- piVar
+    # NOT VARIANCE OF x.est !!!!! => VARIANCE OF TRUE VALUES NEEDED !!! 
+#   }
+   
+  # noise (in paper u): mask.mu = 0
+  # mask=noise term u (random error)
   mask.var <- (1-pt)/pt*(x.var+y.var/pt+(x.mu - y.mu)^2)
-#   print( var(x.est)- (mask.var+x.var)  )
-#   print("------------")
-#   print(paste("pt",pt))
-#   print(paste("y.mu",y.mu))
-#   print(paste("y.var",y.var))
-#   print(paste("x.mu",x.mu))
-#   print(paste("x.var",x.var))
-#    print(paste("mask.var",mask.var))
   quotient <- mask.var/x.var
 }
   
@@ -60,8 +44,8 @@ get.quotient <- function(z,model,p,par2, group){
 p.truth <- function(model,p,par2,group){
   switch(model,
          "direct" = pt <- 1 ,
-         "Warner" =    pt <- ifelse(2*p-1<0, 1-2*p,2*p-1),
-         "Crosswise" = pt <- ifelse(2*p-1<0, 1-2*p,2*p-1),
+         "Warner" =    pt <- 2*p-1, # ifelse(2*p-1<0, 1-2*p,2*p-1),
+         "Crosswise" = pt <- 2*p-1, # ifelse(2*p-1<0, 1-2*p,2*p-1),
          "Mangat" = pt <- p,
          "Kuk" =  pt <- p[1]-p[2],
          "FR" = pt <- 1-sum(p) ,
@@ -70,6 +54,9 @@ p.truth <- function(model,p,par2,group){
          "SLD" = pt <-  par2 -1 +p[group], 
 #          "CDM" = pt <- 1-p[group],
          "UQTunknown" = pt <- p[group],
+         "mix.norm" = pt <- p[1],
+         "mix.exp" = pt <- p[1],
+         "mix.unknown" = pt <- p[group]
 #          "CDMsym" = {
 #            idx <- 2*group-1   # idx=1 für G1 ; idx=3 für G2
 #            pt <- 1- p[idx]-p[idx+1]  # 1-p1-p2 für gruppe 1
@@ -93,17 +80,26 @@ y.mean <- function(model,p,par2,group){
          "Crosswise" = y.mu <-  1/2,
          "Mangat" = y.mu <- 1,
          "Kuk" = y.mu <- p[2]/(1-p[1]+p[2]),
-         "FR" = y.mu <- 1/sum(p)*p %*% 0:(length(p)-1),
-         "UQTknown" = y.mu <- p[2]
+         "FR" = y.mu <- ifelse(all(p==0),0, 1/sum(p)*p %*% 0:(length(p)-1)),
+         "UQTknown" = y.mu <- p[2],
+         "mix.norm" = y.mu <- p[2],
+         "mix.exp" = y.mu <- p[2],
+         "mix.unknown" = y.mu <- par2[1]
          )
   y.mu
 }
 
 # variance of unrelated question
-y.variance <- function(y.mu,model,p){
+y.variance <- function(y.mu,model,p,par2=NULL){
     if (model =="FR"){
-      y.var <- 1/sum(p)*p %*% (0:(length(p)-1))^2 - 
-                          (1/sum(p)*p %*% (0:(length(p)-1)))^2
+      y.var <- ifelse(all(p==0),0,1/sum(p)*p %*% (0:(length(p)-1))^2 - 
+                          (1/sum(p)*p %*% (0:(length(p)-1)))^2)
+    }else if (model == "mix.norm"){
+      y.var <- p[3]^2
+    }else if (model == "mix.exp"){
+      y.var <- p[2]^2
+    }else if (model == "mix.unknown"){
+      y.var <- par2[2]
     }else{
       y.var <- y.mu* (1-y.mu)
     }

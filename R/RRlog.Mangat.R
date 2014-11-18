@@ -9,7 +9,7 @@ RRlog.Mangat <- function(x,y,p,start,group, maxit=1000){
   tryCatch(
 {est <- optim(par=start,fn=RRlog.Mangat.ll,
               gr=RRlog.Mangat.llgrad, 
-              method="BFGS",
+#               method="BFGS",
               control=list(fnscale=-1, maxit=maxit),hessian=T,  cov=x,y=y,prand=p,group=group)
  grad <- RRlog.Mangat.llgrad(est$par,x,y,p,group)
  logLik=est$value;

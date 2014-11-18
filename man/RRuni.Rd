@@ -3,16 +3,14 @@
 \alias{RRuni}
 \title{Univariate analysis of randomized response data}
 \usage{
-RRuni(response, data, model = c("Warner", "UQTknown", "UQTunknown", "Mangat",
-  "Kuk", "FR", "Crosswise", "CDM", "CDMsym", "SLD"), p, group = NULL,
-  MLest = TRUE)
+RRuni(response, data, model, p, group = NULL, MLest = TRUE)
 }
 \arguments{
 \item{response}{either vector of responses containing 0 (No) and 1 (Yes) or name of response variable in \code{data}. In Kuk's card playing method (\code{Kuk}), the observed response variable gives the number of red cards. For the Forced Response (\code{FR}) model, response values are integers from 0 to (m-1), where 'm' is the number of response categories.}
 
 \item{data}{optional \code{data.frame} containing the response variable}
 
-\item{model}{choose RR model, e.g., \code{Warner}, \code{UQTknown}, or \code{SLD}. See \code{vignette('RRreg')} for an overview of the available models}
+\item{model}{choose RR model. Available models: \code{"Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD", "mix.norm", "mix.exp","mix.unknown"}. See \code{vignette('RRreg')} for detailed specifications.}
 
 \item{p}{randomization probability. For the Cheating Detection Model (\code{CDM}) or the Stochastic Lie Detector (\code{SLD}): a vector with two values. For the Forced Response model (\code{FR}): a vector of the length of the number of categories}
 

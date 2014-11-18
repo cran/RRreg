@@ -8,8 +8,8 @@ RRlog.FR <- function(x,y,p,start,group, maxit=1000){
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
   tryCatch(
 {est=optim(par=start,fn=RRlog.FR.ll,
-            gr=RRlog.FR.llgrad, 
-#            method="BFGS",
+           gr=RRlog.FR.llgrad, 
+#            method="L-BFGS-B",
            control=list(fnscale=-1, maxit=maxit),hessian=T,  cov=x,y=y,prand=p,group=group)
  grad <- RRlog.FR.llgrad(est$par,x,y,p,group)  ## falsch?!
  logLik=est$value;

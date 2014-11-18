@@ -13,6 +13,7 @@
 #' @param bs.n Number of samples used for the non-parametric bootstrap
 #' @param nCPU Number of cores used for the bootstrap
 #' @param maxit maximum number of iterations in optimization routine
+#' @param fit.n number of fitting runs with random starting values 
 #' @param pibeta approximate ratio of probabilities pi to regression weights beta (to adjust scaling). Can be used for speeding-up and fine-tuning ML estimation (i.e., choosing a smaller value for larger beta values).
 # @param ... ignored
 #' @author Daniel W. Heck
@@ -20,22 +21,20 @@
 #' @return Returns an object \code{RRlin} which can be analysed by the generic method \code{\link{summary}}
 #' @references van den Hout, A., & Kooiman, P. (2006). Estimating the linear regression model with categorical covariates subject to randomized response. \emph{Computational Statistics & Data Analysis, 50}, 3311-3323. 
 #' @examples
-#' # generate first RR predictor
-#' dat <- RRgen(n=500, pi=.3, model="Warner", p=.3)
-#' # generate a second RR predictor (forced response design)
+#' # generate two RR predictors
+#' dat <- RRgen(n=500, pi=.4, model="Warner", p=.3)
 #' dat2 <- RRgen(n=500, pi=c(.4,.6), model="FR", p=c(.1,.15))
 #' dat$FR <- dat2$response
 #' dat$trueFR <- dat2$true
-#' # generate a third, continuous predictor
+#' 
+#' # generate a third predictor and continuous dependent variables
 #' dat$nonRR <- rnorm(500, 5, 1)
-#' # compute dependent variable as linear combination of predictors
 #' dat$depvar <- 2*dat$true - 3*dat2$true + .5*dat$nonRR +rnorm(500, 1, 7) 
 #' 
-#' # analyze with RRlin
+#' # analyze with RRlin and compare to regression on directly measured variables
 #' linreg <- RRlin(depvar~response+FR+nonRR, data=dat,
-#'                 models=c("Warner","FR"),p.list=list(.3, c(.1,.15)))
+#'                 models=c("Warner","FR"),p.list=list(.3, c(.1,.15)), fit.n=1)
 #' summary(linreg)
-#' # compare results to coeeficients of an ordinary linear regression
 #' summary(lm(depvar~true +trueFR+nonRR, data=dat))
 #' @rdname RRlin
 #' @import doParallel
@@ -43,7 +42,7 @@
 #' @import foreach
 #' @export
 RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1, 
-                  bs.n=0, nCPU=1, maxit=500, pibeta=0.05) {
+                  bs.n=0, nCPU=1, maxit=500, fit.n = 10, pibeta=0.05) {
   #   UseMethod("RRlin")
   
   # formula interface: from formula to design matrix
@@ -206,36 +205,59 @@ RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1,
       # random start values
       pi.est[,g] <- runif(K)
     }else{
-      pi.est[,g] <- solve(PWarray[,,g]) %*% n.star[,g] /sum(sel) 
+      pi.est[,g] <- solve(PWarray[,,g]) %*% n.star[,g] /sum(sel)
+      pi.est[,g] <- pi.est[,g]
     }
   }
   
-  ## adjust for negative estimates of pi (or larger than 1): set to 0 or 1
-  pi.est <- rowMeans(pi.est)
-  pi.est[pi.est<0] <- 0
-  pi.est[pi.est>1] <- 1
-  pi.est <- pi.est/sum(pi.est)
   
-  phi <- c(beta,sigma=sigma,pi=pi.est)
-  start <- phi
-  phi <- phi[-length(phi)]  # last pi is a fixed parameter: sum(pi)=1 !
-  nbeta <- length(beta)
-  npi <- length(pi.est)
-  
-  # EM algorithm
-  
-  # NEWTON RAPHSON like opimization
-  est <- optim(par=phi,fn=RRlin.ll, method="L-BFGS-B",
-               lower=c(rep(-Inf,nbeta),0,  rep(0,npi-1)),
-               upper=c(rep( Inf,nbeta),Inf,rep(1,npi-1)),
-               control=list(fnscale=-1, maxit=maxit,
-                            parscale=c(rep(1,nbeta),1,rep(pibeta/max(abs(beta)),npi-1))),
-               hessian=T,  
-               y=y, u=u, gidx=gidx, U=U, intercept=intercept,
-               PWpp=PWpp, nbeta=nbeta, n.star=n.star, PWarray=PWarray, M=M)
-  if(est$convergence !=0){
-    warning("The L-BFGS-B fitting algorithm did not converge. If model$convergence==1, try to fit the model with a larger number of maximum iterations, e.g., maxit=500.")
+  ############### REPEATED FITTING ##############
+  est <- list() ; est.new <- list()
+  for (ff in 1:fit.n){
+    ## adjust for negative estimates of pi (or larger than 1): set to 0 or 1
+    if (ff == 1){
+      pi.estR <- rowMeans(pi.est)
+      beta1 <- beta
+      sigma1 <- sigma
+    }else{
+      pi.estR <- rowMeans(pi.est)* runif(length(pi.est[,1]),.5,1.5)
+      beta1 <- beta*runif(length(beta), .3, 3)
+      sigma <- sigma*runif(1,.3,3)
+    }
+     
+    pi.estR[pi.estR<0] <- 0
+    pi.estR[pi.estR>1] <- 1
+    pi.estR <- pi.estR/sum(pi.estR)
+    
+    phi <- c(beta,sigma=sigma1,pi=pi.estR)
+    phi <- phi[-length(phi)]  # last pi is a fixed parameter: sum(pi)=1 !
+    nbeta <- length(beta)
+    npi <- length(pi.estR)
+    
+    # EM algorithm
+    
+    # NEWTON RAPHSON like opimization
+    try(est.new <- optim(par=phi,fn=RRlin.ll, method="L-BFGS-B",
+                         lower=c(rep(-Inf,nbeta),0,  rep(0,npi-1)),
+                         upper=c(rep( Inf,nbeta),Inf,rep(1,npi-1)),
+                         control=list(fnscale=-1, maxit=maxit,
+                                      parscale=c(rep(1,nbeta),1,rep(pibeta/max(abs(beta)),npi-1))),
+                         hessian=T,  
+                         y=y, u=u, gidx=gidx, U=U, intercept=intercept,
+                         PWpp=PWpp, nbeta=nbeta, n.star=n.star, PWarray=PWarray, M=M), silent=T)
+    if (is.null(est$value)){
+      est <- est.new
+      start <- phi
+    }
+    if(!is.null(est.new$value) && est.new$value >est$value){
+      est <- est.new
+      start <- phi
+    }
   }
+  
+#   if(est$convergence !=0){
+#     warning("The L-BFGS-B fitting algorithm did not converge. If model$convergence==1, try to fit the model with a larger number of maximum iterations, e.g., maxit=500.")
+#   }
   
   # calculate last value of pi: fixed by sum
   phi <- est$par
@@ -250,60 +272,62 @@ RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1,
               RRvariables=RRvariables, call=match.call(),
               start=start, intercept=intercept, logLik=est$value, bs.n=bs.n) 
   res$npar <- length(phi)
-  res$vcov <- matrix(NA, nrow(est$hessian), ncol(est$hessian))
-  tryCatch(res$vcov <- solve(-est$hessian),
-           error=function(e) {})
-  dimnames(res$hessian) <- list(names(phi) , names(phi) )
-  dimnames(res$vcov) <- list(names(phi) , names(phi) )
+  res$vcov <- est$hessian
+  try({
+    res$vcov <- solve(-est$hessian)
+    dimnames(res$hessian) <- list(names(phi) , names(phi) )
+    dimnames(res$vcov) <- list(names(phi) , names(phi) )
+    }, silent=T)
+  
   res$df <- nrow(unique(cbind(y,x))) -length(phi)
   
   ######################################################################################
   # LR test for each parameter
-#   if (LR.test){
-#     deltaLogLik <- rep(NA,nbeta)
-#     
-#     if (intercept){
-#       # fit model without intercept
-#       try({model2 <- RRlin(formula=y~cbind(w,u)-1, group=group, Kukrep=Kukrep,
-#                            models=models, p.list=p.list)
-#            deltaLogLik[1] <- model2$logLik - est$value})
-#       
-#       # LR test for RR models
-#       if (M==1){
-#         warning('LR test not functional for a single RR variable.')
-#         ## find logLik without RR variables
-# #         model2 <- lm(y ~ u)
-# #         print(model2)
-# #         sss <- summary(model2)$sigma
-# #         print(sss)
-# #         ll0 <- sum(dnorm(y,mean=predict(model2), sd=sss, log=T))
-# #         print(ll0)
-# #         deltaLogLik[2] <- ll0 - est$value
-#       }else{
-#         for (i in 1:M){  
-#           # fit without the RR variable number i
-#           model2 <- RRlin(y~ cbind(w[,-i,drop=F],u), group=group[,-i,drop=F], 
-#                           models=models[-i], p.list=p.list[-i], Kukrep=Kukrep)
-#           deltaLogLik[1+i] <- model2$logLik - est$value
-#         }
-#       }
-#       if (U>0){
-#         for (i in 1:U){  
-#           # fit without the RR variable number i
-#           model2 <- RRlin(y~ cbind(w,u[,-i,drop=F]), group=group, 
-#                           models=models, p.list=p.list, Kukrep=Kukrep)
-#           deltaLogLik[1+M+i] <- model2$logLik - est$value
-#         }
-#       }
-#     }else{
-#       warning('LR test only available for models including an intercept')
-#     }  
-#     
-#     res$prob <- 1-pchisq( -2*deltaLogLik,1)
-#     res$deltaLogLik <- deltaLogLik
-#     names(res$prob) <- names(phi)[1:nbeta]
-#     names(res$deltaLogLik) <- names(phi)[1:nbeta]
-#   }
+  #   if (LR.test){
+  #     deltaLogLik <- rep(NA,nbeta)
+  #     
+  #     if (intercept){
+  #       # fit model without intercept
+  #       try({model2 <- RRlin(formula=y~cbind(w,u)-1, group=group, Kukrep=Kukrep,
+  #                            models=models, p.list=p.list)
+  #            deltaLogLik[1] <- model2$logLik - est$value})
+  #       
+  #       # LR test for RR models
+  #       if (M==1){
+  #         warning('LR test not functional for a single RR variable.')
+  #         ## find logLik without RR variables
+  # #         model2 <- lm(y ~ u)
+  # #         print(model2)
+  # #         sss <- summary(model2)$sigma
+  # #         print(sss)
+  # #         ll0 <- sum(dnorm(y,mean=predict(model2), sd=sss, log=T))
+  # #         print(ll0)
+  # #         deltaLogLik[2] <- ll0 - est$value
+  #       }else{
+  #         for (i in 1:M){  
+  #           # fit without the RR variable number i
+  #           model2 <- RRlin(y~ cbind(w[,-i,drop=F],u), group=group[,-i,drop=F], 
+  #                           models=models[-i], p.list=p.list[-i], Kukrep=Kukrep)
+  #           deltaLogLik[1+i] <- model2$logLik - est$value
+  #         }
+  #       }
+  #       if (U>0){
+  #         for (i in 1:U){  
+  #           # fit without the RR variable number i
+  #           model2 <- RRlin(y~ cbind(w,u[,-i,drop=F]), group=group, 
+  #                           models=models, p.list=p.list, Kukrep=Kukrep)
+  #           deltaLogLik[1+M+i] <- model2$logLik - est$value
+  #         }
+  #       }
+  #     }else{
+  #       warning('LR test only available for models including an intercept')
+  #     }  
+  #     
+  #     res$prob <- 1-pchisq( -2*deltaLogLik,1)
+  #     res$deltaLogLik <- deltaLogLik
+  #     names(res$prob) <- names(phi)[1:nbeta]
+  #     names(res$deltaLogLik) <- names(phi)[1:nbeta]
+  #   }
   
   # nonparametric bootstrap
   if(bs.n>0){
@@ -314,7 +338,8 @@ RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1,
       bs.pi <- matrix(nrow=R, ncol=length(pi))
       bs.sigma <- rep(NA, R) 
       bs.logLik <- bs.sigma
-      for (i in 1:R){
+      cnt <- 1
+      while( cnt <= R){
         # sampling: identical group sizes in bootstrap sample!
         sel <- c()
         for (g in 1:G){
@@ -323,13 +348,16 @@ RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1,
         list(y,sel,models,y,group,w,p.list,u)
         
         # fit model to selected nonparametric BS sample
-        try(model.bs <-  RRlin(formula=y[sel,,drop=F]~cbind(w[sel,,drop=F],u[sel,,drop=F]),
-                               group=group[sel,,drop=F], Kukrep=Kukrep,
-                               models=models, p.list=p.list ))
-        bs.beta[i,] <- model.bs$beta
-        bs.sigma[i] <- model.bs$sigma
-        bs.pi[i,] <- model.bs$pi
-        bs.logLik[i] <- model.bs$logLik
+        try({model.bs <-  RRlin(formula=y[sel,,drop=F]~cbind(w[sel,,drop=F],u[sel,,drop=F]),
+                                group=group[sel,,drop=F], Kukrep=Kukrep,
+                                models=models, p.list=p.list, fit.n=2)
+             bs.beta[cnt,] <- model.bs$beta
+             bs.sigma[cnt] <- model.bs$sigma
+             bs.pi[cnt,] <- model.bs$pi
+             bs.logLik[cnt] <- model.bs$logLik
+        })
+        if (!is.na(bs.beta[cnt,1])) 
+          cnt <- cnt+1
       }
       # return results as list
       bs.res <- list(beta=bs.beta, pi=bs.pi, sigma=bs.sigma, logLik=bs.logLik)
@@ -339,7 +367,7 @@ RRlin <- function(formula, data, models, p.list, group=NULL, Kukrep=1,
       res$bs.beta <- bs.res$beta; res$bs.sigma <- bs.res$sigma; 
       res$bs.pi <- bs.res$pi; res$bs.logLik <- bs.res$logLik; 
     }else{
-#       require(doParallel, quietly=T)
+      #       require(doParallel, quietly=T)
       if (nCPU=="max"){
         try(nCPU <-  as.numeric(Sys.getenv('NUMBER_OF_PROCESSORS')))
         if (nCPU=="max") nCPU <- 2
@@ -401,11 +429,11 @@ summary.RRlin <- function(object, ...)
                  StdErr = se[1:length(object$beta)],
                  "Wald test"=wald_chi,
                  "Pr(>Chi2,df=1)"= 1-pchisq(wald_chi, df=1) )
-#   if(object$LR.test){
-#     bcoef <- cbind(bcoef,
-#                    "deltaG2"= -2*object$deltaLogLik,
-#                    "Pr(>deltaG2)" = object$prob)
-#   }
+  #   if(object$LR.test){
+  #     bcoef <- cbind(bcoef,
+  #                    "deltaG2"= -2*object$deltaLogLik,
+  #                    "Pr(>deltaG2)" = object$prob)
+  #   }
   
   pcoef <- cbind(Estimate = object$pi[-length(object$pi)],
                  StdErr = se[(length(object$beta)+2):length(se)]

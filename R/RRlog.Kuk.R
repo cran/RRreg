@@ -8,7 +8,7 @@ RRlog.Kuk <- function(x,y,p,start,rep,group, maxit=1000){
   tryCatch(
 {est <- optim(par=start,fn=RRlog.Kuk.ll,
               gr=RRlog.Kuk.llgrad, 
-              method="BFGS",
+#               method="BFGS",
               control=list(fnscale=-1, maxit=maxit),hessian=T,  cov=x,y=y,prand=p,rep=rep,group=group)
  grad <- RRlog.Kuk.llgrad(est$par,x,y,p,rep,group)
  logLik=est$value;

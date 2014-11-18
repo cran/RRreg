@@ -4,7 +4,7 @@
 \title{Linear randomized response regression}
 \usage{
 RRlin(formula, data, models, p.list, group = NULL, Kukrep = 1, bs.n = 0,
-  nCPU = 1, maxit = 500, pibeta = 0.05)
+  nCPU = 1, maxit = 500, fit.n = 10, pibeta = 0.05)
 }
 \arguments{
 \item{formula}{a continuous criterion is predicted by one or more categorical RR variables defined by \code{models}. If the number of predictors exceeds the number defined by the vector \code{models}, the remaining predictors are treated as non-randomized variables (e.g., direct questions). At the moment, only additive effects (no interactions) can be used.}
@@ -25,6 +25,8 @@ RRlin(formula, data, models, p.list, group = NULL, Kukrep = 1, bs.n = 0,
 
 \item{maxit}{maximum number of iterations in optimization routine}
 
+\item{fit.n}{number of fitting runs with random starting values}
+
 \item{pibeta}{approximate ratio of probabilities pi to regression weights beta (to adjust scaling). Can be used for speeding-up and fine-tuning ML estimation (i.e., choosing a smaller value for larger beta values).}
 }
 \value{
@@ -34,22 +36,20 @@ Returns an object \code{RRlin} which can be analysed by the generic method \code
 Linear regression for a continuous criterion, using randomized-response (RR) variables as predictors.
 }
 \examples{
-# generate first RR predictor
-dat <- RRgen(n=500, pi=.3, model="Warner", p=.3)
-# generate a second RR predictor (forced response design)
+# generate two RR predictors
+dat <- RRgen(n=500, pi=.4, model="Warner", p=.3)
 dat2 <- RRgen(n=500, pi=c(.4,.6), model="FR", p=c(.1,.15))
 dat$FR <- dat2$response
 dat$trueFR <- dat2$true
-# generate a third, continuous predictor
+
+# generate a third predictor and continuous dependent variables
 dat$nonRR <- rnorm(500, 5, 1)
-# compute dependent variable as linear combination of predictors
 dat$depvar <- 2*dat$true - 3*dat2$true + .5*dat$nonRR +rnorm(500, 1, 7)
 
-# analyze with RRlin
+# analyze with RRlin and compare to regression on directly measured variables
 linreg <- RRlin(depvar~response+FR+nonRR, data=dat,
-                models=c("Warner","FR"),p.list=list(.3, c(.1,.15)))
+                models=c("Warner","FR"),p.list=list(.3, c(.1,.15)), fit.n=1)
 summary(linreg)
-# compare results to coeeficients of an ordinary linear regression
 summary(lm(depvar~true +trueFR+nonRR, data=dat))
 }
 \author{

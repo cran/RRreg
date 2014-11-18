@@ -18,6 +18,12 @@ RRcheck.p <- function(model,p){
       warning(paste0("For model: '",model,"' , the randomization probabilities must meet these conditions: p[1]+p[2]<1 and p[3]+p[4]<1 (i.e., the sum of probabilities for a forced response has to be smaller than 1)"))
   }else if (model== "Mangat" &&  (length(p)!=1 || p<0 || p>1)){
     warning(paste0("For model: '",model,"' , the randomization probability 'p' has to be in [0,1]"))
+  }else if (model %in% c("mix.norm") && (length(p)!=3 || p[1]<0 || p[1]>1)){
+    warning(paste0("For model: '",model,"' , the randomization probability 'p' has to be a vector with 3 values: p[1] = p_truth in [0,1] ; p[2],p[3] = Mean, Variance of masking distribution  "))
+  }else if (model %in% c("mix.exp") && (length(p)!=2 || p[1]<0 || p[1]>1)){
+    warning(paste0("For model: '",model,"' , the randomization probability 'p' has to be a vector with 2 values: p[1] = p_truth in [0,1] ; p[2] = Mean of masking distribution"))
+  }else if (model %in% c("mix.unknown") && (length(p)!=2 || p[1]==p[2] || any(p<0) || any(p>1))){
+    warning(paste0("For model: '",model,"' , the randomization probability 'p' has to be a vector with 2 probabilities between 0 and 1: p[1] = p_truth[group==1] != p[2] = p_truth[group==2] "))
   }
 }
 
@@ -41,7 +47,7 @@ RRcheck.xp <- function(model,y,p,vectorName){
 
 RRcheck.xpgroup <- function(model,y,p,group,vectorName){
   RRcheck.xp (model,y,p,vectorName)
-  if ( model %in% c("SLD","CDM","CDMsym","UQTunknown") ) {
+  if ( model %in% c("SLD","CDM","CDMsym","UQTunknown", "mix.unknown") ) {
     group <- as.numeric(group)
     if ( missing(group) || is.null(group) || 
            length(group) != length(y) || !(length(table(group)) %in% 2:3) ||
@@ -106,8 +112,11 @@ RRcheck.pi <- function(model,pi,n){
         warning("The proportion 'pi' of the prevalence of the sensitive attribute (response = 1) must be within the interval (0,1)")
     }else if (sum(pi<0) > 0 || sum(pi>1) > 0 || sum(pi)!=1)
       warning("For the Forced Response (FR) model, 'pi' must be a vector with a length equal to the number of response categories, containing probabilities in [0,1] which sum up to 1")
-  }
-  else{
+  }else if (model %in% c("mix.norm") && (length(pi)!=2 || pi[2]<=0)){
+    warning("For the model 'mix.norm', the true state 'pi' of the sensitive attribute is defined as pi[1] = Mean / pi[2] = Variance of the 'true' normal distrubtion.")
+  }else if (model %in% c("mix.exp") && (length(pi)!=1 || pi<=0)){
+    warning("For the model 'mix.exp', the true state 'pi' of the sensitive attribute is defined as pi[1] = Mean of the 'true' exponential distrubtion.")
+  }else if (!(model %in% c("mix.norm","mix.exp","mix.unknown"))){
     if (pi<0 || pi>1){
       warning("True proportion 'pi' has to be in the interval [0,1]");
     }
@@ -129,17 +138,17 @@ RRcheck.groupRatio <- function(groupRatio){
 RRcheck.cor <- function(X,m,models,p.list,nameVariables,groups){
   if ( any(is.na(models))){
     models.char <- paste(models,collapse=", ")
-    warning(paste("\nVector 'models' does not define valid models. Available models: Warner, Mangat ,Kuk, FR, UQTknown, Crosswise and direct (i.e., no randomization). Currently defined: ",models.char))
+    warning(paste("\nVector 'models' does not define valid models. Available models: Warner, Mangat ,Kuk, FR, UQTknown, Crosswise, mix.norm, mix.exp, mix.unknown, and direct (i.e., no randomization). Currently defined: ",models.char))
   }
   if (m!=length(models) )
     warning("Number of variables does not match to length of 'models'")
   if ( m!=length(p.list))
     warning("Number of variables does not match to length of 'p.list'")
   for (i in 1:m){
-    RRcheck.xp(models[i],X[,i],p.list[[i]],nameVariables[i])
+    RRcheck.xp(models[i],X[,i],p.list[[i]],nameVariables[i]) 
   }
   
-  numMultiplGr <- sum(models %in% c("CDM","CDMsym","SLD","UQTunknown"))
+  numMultiplGr <- sum(models %in% c("CDM","CDMsym","SLD","UQTunknown","mix.unknown"))
   if ( any(models %in% c("CDM","CDMsym","SLD","UQTunknown"))){
     if (missing(groups) || is.null(groups)){
       warning("Missing argument: 'groups' needed for multiple group models such as CDM, CDMsym, SLD or UQTunknown")

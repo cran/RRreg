@@ -6,7 +6,7 @@
 #' A dichotomous variable, measured by a randomized response method, serves as dependent variable using one or more continuous and/or categorical predictors
 #' @param formula specifying the regression model, see \code{\link{formula}}
 #' @param data \code{data.frame}, in which variables can be found (optional)
-#' @param model defining RR model, e.g., \code{"Warner"}
+#' @param model Available RR models: \code{"Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD"}. See \code{vignette("RRreg")} for details.
 #' @param p randomization probability/probabilities (depending on model)
 #' @param group vector specifying group membership. Can be omitted for single-group RR designs (e.g., Warner). For two-group RR designs (e.g., \code{CDM} or \code{SLD}), use 1 and 2 to indicate the group membership, matching the respective randomization probabilities \code{p[1], p[2]}. If an RR design and a direct question (DQ) were both used in the study, the group indices are set to 0 (DQ) and 1 (RR; 1 or 2 for two-group RR designs). This can be used to test, whether the RR design leads to a different prevalence estimate by including a dummy variable for the question format (RR vs. DQ) as predictor. If the corresponding regression coefficient is significant, the prevalence estimates differ between RR and DQ. Similarly, interaction hypotheses can be tested (e.g., the correlation between a sensitive attribute and a predictor is only found using the RR but not the DQ design). Hypotheses like this can be tested by including the interaction of the DQ-RR-dummy variable and the predictor in \code{formula} (e.g., \code{RR ~ dummy*predictor}).
 #' @param LR.test test regression coefficients by a likelihood ratio test, i.e., fitting the model repeatedly while excluding one parameter at a time
@@ -26,13 +26,13 @@
 #' dat$covariate <- rnorm(1000)
 #' dat$covariate[dat$true==1] <- rnorm(sum(dat$true==1),.4,1)
 #' # analyse
-#' ana <- RRlog(response~covariate,dat,"Warner",.8)
+#' ana <- RRlog(response~covariate,dat,"Warner",.8, fit.n = c(1,5))
 #' summary(ana)
 # @rdname RRlog
 #' @export
-RRlog <- function(formula, data,
-                  model = c("Warner","UQTknown","UQTunknown","Mangat","Kuk","FR","Crosswise","CDM","CDMsym","SLD"),
-                  p,group, LR.test=TRUE, fit.n=c(10,100), fit.bound=10, maxit=1000, start=NULL, ...) UseMethod("RRlog")
+RRlog <- function(formula, data,model, p,group, LR.test=TRUE, 
+                  fit.n=c(10,100),fit.bound=10, maxit=1000, 
+                  start=NULL, ...) UseMethod("RRlog")
 
 # choose model and construct S3 method 'RRlog' 
 
@@ -69,15 +69,23 @@ RRlog.default <-function(formula,data,model,p,group, LR.test=TRUE, fit.n=c(10,10
     cnt <- 0
   }
   
-  while (cnt <fit.n[1] | (max(abs(est$coef))>fit.bound & cnt <fit.n[2])){
+  while (cnt <fit.n[1] | 
+           ( (est$logLik==-Inf |max(abs(est$coef))>fit.bound) & cnt <fit.n[2])){
     cnt <- cnt +1
+    if (cnt == 1){
       glmcoef <- coef(glm.fit(x,y, family=binomial(link = "logit")))
-      start <- runif (ncol(x),min(-1*glmcoef, -3), max(glmcoef*10, 3))
-    #glmcoef * runif(ncol(x), -1, 10) # 
-      if (model %in% c("CDM","CDMsym","UQTunknown","SLD")){   ### problem: group==0 
-        start <- c(start, runif(1, .5,.95))
+      start <- glmcoef
+      if(is2group(model)){
+        uni <- RRuni(response=y,model=model,p=p,group=group)
+        start <- c(start, summary(uni)$coef[2,1])
       }
-      
+    }else{
+      start <- runif (ncol(x),-1e-4, 1e-4)*(3+25*cnt/fit.n[2])^3
+      if(is2group(model)){
+        start <- c(start, runif(1, .35,.95))
+      }
+    }
+    
       switch(model,
              "Warner" = est2 <- RRlog.Warner(x,y,p,start,group, maxit=maxit) ,
              "UQTknown" = est2 <- RRlog.UQTknown(x,y,p,start,group, maxit=maxit),
@@ -90,23 +98,26 @@ RRlog.default <-function(formula,data,model,p,group, LR.test=TRUE, fit.n=c(10,10
                est2$model="Crosswise"},
              "CDM" = est2 <- RRlog.CDM(x,y,p,start,group, maxit=maxit),
              "CDMsym" = est2 <- RRlog.CDMsym(x,y,p,start,group, maxit=maxit),
-             "SLD" = est2 <- RRlog.SLD(x,y,p,start,group, maxit=maxit))
-      if (!is.na(est2$logLik) && est2$logLik > est$logLik) est <- est2
-    
+             "SLD" = est2 <- RRlog.SLD(x,y,p,start,group, maxit=maxit)
+             )
+      
+    if (!is.na(est2$logLik) && est2$logLik > est$logLik) 
+        est <- est2
   }
 #   if (cnt == fit.n[2]) warning(paste0("Maximum number of fitting replications reached (fit.n=",fit.n[2],"). This could indicate extreme and/or unstable parameter estimates. Consider re-fitting the model (e.g., using fit.n=c(5,1000) and/or fit.bound=25)"))
   
-  #   est$intercept <- intercept
   est$n <- length(y)
   est$n.dq <- sum(group==0)
   est$npar <- length(est$param)
-  est$vcov <- solve(-est$hessian)
   names(est$coefficients) <- est$param
-  names(est$gradient) <- est$param
-  colnames(est$hessian) <- est$param
-  rownames(est$hessian) <- est$param
-  colnames(est$vcov) <- est$param
-  rownames(est$vcov) <- est$param
+  try({
+    est$vcov <- solve(-est$hessian)
+   names(est$gradient) <- est$param
+    colnames(est$hessian) <- est$param
+   rownames(est$hessian) <- est$param
+    colnames(est$vcov) <- est$param
+    rownames(est$vcov) <- est$param
+  }, silent=T)
   est$start <- start
   names(est$start) <- est$param
   
@@ -154,12 +165,13 @@ RRlog.default <-function(formula,data,model,p,group, LR.test=TRUE, fit.n=c(10,10
   if (model %in% c("SLD","CDM","CDMsym","UQTunknown")){
     coef <- coef[-est$npar]
   }
-  est$fitted.values <- as.vector( x %*% coef)
-  
-  ## pi schätzen
-  e <- exp(est$fitted.values)
-  est$pi <- mean(e/(1+e))
-  est$fit.n <- cnt
+  try({
+    est$fitted.values <- as.vector( x %*% coef)
+    ## pi schätzen
+    e <- exp(est$fitted.values)
+    est$pi <- mean(e/(1+e))
+    est$fit.n <- cnt
+  }, silent=T)
   
   # SE: Scheers & Dayton 1988: propagation of error  page 970 
   # ableitung von pi = e/(1+e) nach den coeffizienten (gradient)

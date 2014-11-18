@@ -9,7 +9,7 @@ RRlog.Warner <- function(x,y,p,start,group, maxit=1000){
   tryCatch(
     {est <- optim(par=start,fn=RRlog.Warner.ll,
             gr=RRlog.Warner.llgrad, 
-            method="BFGS",
+#             method="BFGS",
             control=list(fnscale=-1, maxit=maxit),hessian=T,  cov=x,y=y,prand=p,group=group);
      grad <- RRlog.Warner.llgrad(est$par,x,y,p,group);
      logLik=est$value;

@@ -8,7 +8,7 @@ RRlog.UQTknown <- function(x,y,p,start,group, maxit=1000){
   tryCatch(
 {est <- optim(par=start,fn=RRlog.UQTknown.ll,
               gr=RRlog.UQTknown.llgrad, 
-              method="BFGS",
+#               method="BFGS",
               control=list(fnscale=-1, maxit=maxit),hessian=T,  cov=x,y=y,prand=p,group=group)
  grad <- RRlog.UQTknown.llgrad(est$par,x,y,p,group)
  logLik=est$value;
