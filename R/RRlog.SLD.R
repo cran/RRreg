@@ -5,6 +5,7 @@ RRlog.SLD <- function(x,y,p,start,group,setT=FALSE, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   try({est <- optim(par=start,fn=RRlog.SLD.ll,
                     gr=RRlog.SLD.llgrad, 
                     method="L-BFGS-B",
@@ -17,6 +18,7 @@ RRlog.SLD <- function(x,y,p,start,group,setT=FALSE, maxit=1000){
        coef=est$par;
        iter=est$counts;
        hessian=est$hessian
+       convergence <- est$convergence
   },silent=T)
   
 #   print(grad)
@@ -25,7 +27,7 @@ RRlog.SLD <- function(x,y,p,start,group,setT=FALSE, maxit=1000){
               pString=paste("p1 = ",round(p[1],3),"; p2 = ",round(p[2],3),sep=""),
               coefficients=coef,
               logLik=logLik,param=c(colnames(x),"t"),
-              gradient=grad,hessian=hessian,iter=iter, convergence=est$convergence)
+              gradient=grad,hessian=hessian,iter=iter, convergence=convergence)
   return(res)
 }
 

@@ -5,6 +5,7 @@ RRlog.UQTknown <- function(x,y,p,start,group, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
 {est <- optim(par=start,fn=RRlog.UQTknown.ll,
               gr=RRlog.UQTknown.llgrad, 
@@ -15,6 +16,7 @@ RRlog.UQTknown <- function(x,y,p,start,group, maxit=1000){
  coef=est$par;
  iter=est$counts;
  hessian=est$hessian
+convergence <- est$convergence
 }
 ,error = function(e) {})
   
@@ -24,7 +26,7 @@ RRlog.UQTknown <- function(x,y,p,start,group, maxit=1000){
                                                round(p[1],3),"; prevalence of irrelevant question = ",
                                                round(p[2],3)),param=colnames(x), coefficients=coef, logLik=logLik,
            gradient=grad,hessian=hessian,
-           iter=iter, convergence=est$convergence)
+           iter=iter, convergence=convergence)
   return(res)
 }
 

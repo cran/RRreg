@@ -6,6 +6,7 @@ RRlog.Warner <- function(x,y,p,start,group, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
     {est <- optim(par=start,fn=RRlog.Warner.ll,
             gr=RRlog.Warner.llgrad, 
@@ -16,13 +17,14 @@ RRlog.Warner <- function(x,y,p,start,group, maxit=1000){
      coef=est$par;
      iter=est$counts;
      hessian=est$hessian
+      est$convergence
     }
     ,error = function(e) {})
 #   print(RRlog.Warner.llgrad(est$par,x,y,p,group))
 #   print(grad(RRlog.Warner.ll,est$par,cov=x,y=y,prand=p,group=group))
   res <- list(model="Warner",pString=paste0("p = ",round(p,3)),
            coefficients=coef, logLik=logLik,param=colnames(x),
-           gradient=grad,hessian=hessian,iter=iter, convergence=est$convergence)
+           gradient=grad,hessian=hessian,iter=iter, convergence=convergence)
   return(res)
 }
 

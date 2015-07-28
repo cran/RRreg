@@ -5,6 +5,7 @@ RRlog.CDM <- function(x,y,p,start,group,setGamma=FALSE, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
   {est <- optim(par=start,fn=RRlog.CDM.ll,
               gr=RRlog.CDM.llgrad, 
@@ -18,6 +19,7 @@ RRlog.CDM <- function(x,y,p,start,group,setGamma=FALSE, maxit=1000){
  coef=est$par;
  iter=est$counts;
  hessian=est$hessian
+convergence <- est$convergence
 }
 ,error = function(e) {})
 
@@ -27,7 +29,7 @@ RRlog.CDM <- function(x,y,p,start,group,setGamma=FALSE, maxit=1000){
               pString=paste0("forced Yes = ",round(p[1],3),"/",round(p[2],3), " (group 1/2)"),
               coefficients=coef,
               logLik=logLik, param=c(colnames(x),"gamma"),
-              gradient=grad,hessian=hessian,iter=iter, convergence=est$convergence)
+              gradient=grad,hessian=hessian,iter=iter, convergence=convergence)
   return(res)
 }
 

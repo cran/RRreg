@@ -6,6 +6,7 @@ RRlog.FR <- function(x,y,p,start,group, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
 {est=optim(par=start,fn=RRlog.FR.ll,
            gr=RRlog.FR.llgrad, 
@@ -16,6 +17,7 @@ RRlog.FR <- function(x,y,p,start,group, maxit=1000){
  coef=est$par;
  iter=est$counts;
  hessian=est$hessian
+convergence <- est$convergence
 }
 ,error = function(e) {})
 
@@ -24,7 +26,7 @@ RRlog.FR <- function(x,y,p,start,group, maxit=1000){
 #   print(grad(RRlog.FR.ll,est$par,cov=x,y=y,prand=p,group=group))
   res=list(model="FR",pString=paste("p1 = ",round(p[1],3),"; p2 = ",round(p[2],3),sep=""),
            coefficients=coef,logLik=logLik,param=colnames(x),
-           gradient=grad, hessian=hessian,iter=iter, convergence=est$convergence)
+           gradient=grad, hessian=hessian,iter=iter, convergence=convergence)
   return(res);
 }
 

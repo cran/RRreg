@@ -6,6 +6,7 @@ RRlog.Mangat <- function(x,y,p,start,group, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
 {est <- optim(par=start,fn=RRlog.Mangat.ll,
               gr=RRlog.Mangat.llgrad, 
@@ -16,6 +17,7 @@ RRlog.Mangat <- function(x,y,p,start,group, maxit=1000){
  coef=est$par;
  iter=est$counts;
  hessian=est$hessian
+convergence <- est$convergence
 }
 ,error = function(e) {})
 
@@ -24,7 +26,7 @@ RRlog.Mangat <- function(x,y,p,start,group, maxit=1000){
 #   print(grad(RRlog.Mangat.ll,est$par,cov=x,y=y,prand=p,group=group))
   res <- list(model="Mangat",pString=paste0("p = ",round(p,3)),
               coefficients=coef, logLik=logLik,param=colnames(x),
-              gradient=grad,hessian=hessian,iter=iter, convergence=est$convergence)
+              gradient=grad,hessian=hessian,iter=iter, convergence=convergence)
   return(res)
 }
 

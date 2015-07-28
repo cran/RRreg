@@ -8,7 +8,7 @@ Authors@R: c(person( given="Daniel
 Author: Daniel W. Heck [aut, cre], Morten Moshagen [aut]
 Maintainer: Daniel W. Heck <dheck@mail.uni-mannheim.de>
 Depends: R (>= 3.0.0)
-Imports: parallel, doParallel, foreach
+Imports: parallel, doParallel, foreach, stats, grDevices, graphics
 Suggests: knitr
 Description: Univariate and multivariate methods to analyze
     randomized response (RR) survey designs (e.g., Warner, S. L. (1965).
@@ -23,9 +23,9 @@ Encoding: UTF-8
 LazyLoad: yes
 URL: http://psycho3.uni-mannheim.de/Home/Research/Software/RRreg/
 VignetteBuilder: knitr
-Version: 0.3.0
-Date: 2015-02-23
+Version: 0.4.1
+Date: 2015-07-24
 NeedsCompilation: no
-Packaged: 2015-02-23 17:17:11 UTC; Daniel
+Packaged: 2015-07-24 15:53:33 UTC; Daniel
 Repository: CRAN
-Date/Publication: 2015-02-23 18:52:33
+Date/Publication: 2015-07-28 23:19:02

@@ -19,7 +19,7 @@
 #' @param optim.max Maximum number of iterations within each run of \code{optim}
 # @param start starting values for optimization. Might be useful if model does not converge with default starting values.
 #' @param ... ignored
-#' @details The logistic regression model is fitted first by an EM algorithm, in which the dependend RR variable is treated as a misclassified binary variable (Magder & Hughes, 1997). The results are used as starting values for a Newton-Raphson based optimization by \code{\link{optim}}. Note that random starting values are only used if \code{fit.n>1}; otherwise, starting valeus are computed by a standard logistic regression on the RR variable.
+#' @details The logistic regression model is fitted first by an EM algorithm, in which the dependend RR variable is treated as a misclassified binary variable (Magder & Hughes, 1997). The results are used as starting values for a Newton-Raphson based optimization by \code{\link{optim}}.
 #' @author Daniel W. Heck
 #' @seealso \code{vignette('RRreg')} or \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
 #' @return Returns an object \code{RRlog} which can be analysed by the generic method \code{\link{summary}}
@@ -33,8 +33,11 @@
 #' ana <- RRlog(response~covariate,dat,"Warner",.8, fit.n = 1)
 #' summary(ana)
 #' @export
+#' @import stats
+#' @importFrom grDevices adjustcolor
+#' @import graphics
 RRlog <- function(formula, data, model, p,group, LR.test=TRUE, 
-                  fit.n=1, EM.max=1000, optim.max=500,  ...) UseMethod("RRlog")
+                  fit.n=3, EM.max=1000, optim.max=500,  ...) UseMethod("RRlog")
 
 # choose model and construct S3 method 'RRlog' 
 
@@ -90,7 +93,7 @@ RRlog.default <-function(formula, data, model, p, group, LR.test=TRUE, fit.n=1,
     # | ( (est$logLik==-Inf |max(abs(est$coef))>fit.bound) & cnt <fit.n[2]) # old scheme: fit.n=c(5,20)
     
     # random dependent variable to get different starting values for EM:
-    yy <- ifelse(rbinom(n, 1, min(.6,(cnt-1)/fit.n)) == 1, rbinom(n, 1, .5), y)
+    yy <- ifelse(rbinom(n, 1, max(.5,cnt/fit.n)) == 1, rbinom(n, 1, .5), y)
     #     print(sum(yy == y) /n)   # proporiton of identical RR outcomes for starting values
     glm.mod <- glm.fit(x, yy, family=binomial(link = "logit"))
     
@@ -124,7 +127,7 @@ RRlog.default <-function(formula, data, model, p, group, LR.test=TRUE, fit.n=1,
     #     print(paste(Sys.time(), " - Start optim"))
     
     ####################### optim estimation
-    switch(model,
+    try(switch(model,
            "Warner" = est2 <- RRlog.Warner(x,y,p,start,group, maxit=optim.max) ,
            "UQTknown" = est2 <- RRlog.UQTknown(x,y,p,start,group, maxit=optim.max),
            "UQTunknown" = est2 <- RRlog.UQTunknown(x,y,p,start,group, maxit=optim.max),
@@ -137,16 +140,16 @@ RRlog.default <-function(formula, data, model, p, group, LR.test=TRUE, fit.n=1,
            "CDM" = est2 <- RRlog.CDM(x,y,p,start,group, maxit=optim.max),
            "CDMsym" = est2 <- RRlog.CDMsym(x,y,p,start,group, maxit=optim.max),
            "SLD" = est2 <- RRlog.SLD(x,y,p,start,group, maxit=optim.max)
-    )
+    ))
     
     if (!is.na(est2$logLik) && est2$logLik > est$logLik) 
       est <- est2
   }
   #   print(Sys.time())
   #   if (cnt == fit.n[2]) warning(paste0("Maximum number of fitting replications reached (fit.n=",fit.n[2],"). This could indicate extreme and/or unstable parameter estimates. Consider re-fitting the model (e.g., using fit.n=c(5,1000) and/or fit.bound=25)"))
-  if(est$convergence != 0)
+  try(if(est$convergence != 0)
     warning(paste0("optim$convergence=",est$convergence,
-                   ". Check convergence of model (e.g. by refitting using fit.n=c(20,20)."))
+                   ". Check convergence of model (e.g. by refitting using fit.n=c(20,20).")), silent=T)
   
   est$n <- length(y)
   est$n.dq <- sum(group==0)
@@ -285,9 +288,10 @@ RRlog.formula <- function(formula, data=list(), model, p, group, ...){
 predict.RRlog <- function(object, newdata=NULL, se.fit=FALSE, 
                           ci= 0.95, ...)
 {
-  if(is.null(newdata))
+  if(is.null(newdata)){
     y <- fitted(object)
-  else{
+    x <- model.matrix(object$formula, object$model.frame)
+  }else{
     if(!is.null(object$formula)){
       newdata <- data.frame(newdata, predict=1)
       ## model has been fitted using formula interface
@@ -309,7 +313,7 @@ predict.RRlog <- function(object, newdata=NULL, se.fit=FALSE,
       vcov <- vcov[1:k,1:k]
     }
     predict.vcov <- x %*% vcov %*% t(x)
-    predict.se <- diag(sqrt(predict.vcov))
+    predict.se <- sqrt(diag(predict.vcov))
     zcrit <- qnorm((1-ci)/2, lower.tail=F)
     ci.lower <- y - predict.se*zcrit
     ci.upper <- y + predict.se*zcrit
@@ -417,4 +421,73 @@ logLik.RRlog <- function(object, ...){
 #' @export
 vcov.RRlog <- function(object, ...){
   return(object$vcov)
+}
+
+#' Plot Logistic RR Regression
+#' 
+#' Plot the predictions of a fitted  logistic RR regression model. Data are not included directly, as these are not directly interpretable due to the RR design.
+#' 
+#'  @param x a fitted \link{RRlog} object
+#'  @param predictor character name of a predictor of the model to be fitted
+#'  @param center.preds whether to compute predictions by assuming that all other predictors are at their respective mean values (if FALSE: all other predictors set to zero)
+#'  @param plot.mean whether to plot mean of predictor as vertical line
+#'  @param ci level for confidence intervals. Set to 0 to omit.
+#'  @param xlim if provided, these boundaries are used for the predictor on the x-axis
+#'  @param steps number of steps for plotting
+#'  @param ... other arguments passed to the function \link{plot}
+#'  @examples
+#'  # generate data
+#'  n <- 500
+#'  x <- data.frame(x1=rnorm(n))
+#'  pi.true <- 1/(1+exp(.3+1.5*x$x1))
+#'  dat <- RRgen(n, pi.true=pi.true, model="Warner", p=.1)
+#'  x$response <- dat$response
+#'  # fit and plot model
+#'  mod <- RRlog(response ~ x1, data=x, model="Warner", p=.1)
+#'  plot(mod, "x1" ,ci=.95)
+#' @export
+plot.RRlog <- function(x, predictor=NULL, center.preds=T, 
+                       plot.mean=T, ci=.95, xlim=NULL, steps=50, ...){
+  
+  # single predictor: choose automatically
+  beta <- x$coef
+  if(missing(predictor) | is.null(predictor)){
+    if(length(beta) == 2 & names(beta)[1] == "(Intercept)"){
+      predictor <- names(beta)[2]
+    }else{
+      stop(" Please provide a predictor for the x-axis.")
+    }
+  }
+  
+  # predict values
+  if(missing(xlim) | is.null(xlim)){
+    predvals <- x$model.frame[,predictor]
+    xlim <- c(min(predvals), max(predvals))
+  }
+  xx <- seq(xlim[1], xlim[2], length.out=steps)
+  
+  # construct new design matrix
+  X.old <-  model.matrix(x$formula, x$model.frame)
+  X.new <- colMeans(X.old[,colnames(X.old) != predictor, drop=F])
+  X <- cbind(matrix(X.new, length(xx),length(beta)-1,  byrow=T), predictor=xx)
+  colnames(X) <- c(names(X.new), predictor)
+    
+  pred <- predict(x, newdata=X, ci=ci) 
+  if(is.null(dim(pred))){
+    yy <- pred
+  }else{
+    yy <- pred[,"predict"]
+  }
+  
+  plot(xx, yy, main=paste("RRlog model:",substitute(x)), type="l", 
+       xlab=substitute(predictor), ylab=colnames(x$model.frame)[1], ylim=0:1)
+  if(!is.null(dim(pred))){
+    polygon(c(xx, rev(xx)), c(pred[,2], rev(pred[,3])),border=NA,
+            col=adjustcolor("gray", alpha.f=.5))
+  }
+  if(plot.mean){
+    abline(v=mean(x$model.frame[,predictor]) , lty=3)
+  }
+  lines(x=xx, y=yy)
+  
 }

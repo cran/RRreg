@@ -5,6 +5,7 @@ RRlog.UQTunknown <- function(x,y,p,start,group,setPiUQ=FALSE, maxit=1000){
   coef<- rep(NA,ncol(x));
   iter<- NA;
   hessian<- matrix(NA,ncol=ncol(x),nrow=ncol(x))
+  convergence <- NA;
   tryCatch(
 {est <- optim(par=start,fn=RRlog.UQTunknown.ll,
               gr=RRlog.UQTunknown.llgrad, 
@@ -18,6 +19,7 @@ RRlog.UQTunknown <- function(x,y,p,start,group,setPiUQ=FALSE, maxit=1000){
  coef=est$par;
  iter=est$counts;
  hessian=est$hessian
+convergence <- est$convergence
 }
 ,error = function(e) {})
 
@@ -27,7 +29,7 @@ RRlog.UQTunknown <- function(x,y,p,start,group,setPiUQ=FALSE, maxit=1000){
               pString=paste0("probability of answering sensitive question = ",round(p[1],3),"/",round(p[2],3)," (group 1/2)"),
               coefficients=coef,
               logLik=logLik, param=c(colnames(x),"piUQ"),
-              gradient=grad,hessian=hessian,iter=iter, convergence=est$convergence)
+              gradient=grad,hessian=hessian,iter=iter, convergence=convergence)
   return(res)
 }
 

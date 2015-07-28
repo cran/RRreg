@@ -6,8 +6,8 @@
 #' \tabular{ll}{
 #' Package: \tab RRreg\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.3.0\cr
-#' Date: \tab 2015-02-23\cr
+#' Version: \tab 0.4.1\cr
+#' Date: \tab 2015-07-24\cr
 #' Depends: \tab R (>= 3.0.0)\cr
 #' Imports: \tab parallel, doParallel, foreach\cr
 #' Suggests: \tab knitr\cr
@@ -25,5 +25,6 @@
 #' @author Daniel W. Heck \email{dheck@@mail.uni-mannheim.de} and Morten Moshagen \email{moshagen@@uni-kassel.de}
 #' @keywords package
 #' @references Warner, S. L. (1965). Randomized response: A survey technique for eliminating evasive answer bias. \emph{Journal of the American Statistical Association, 60}, 63–69.
+
 
 NULL

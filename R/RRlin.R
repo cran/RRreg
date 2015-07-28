@@ -45,7 +45,7 @@
 #' @export
 RRlin <- function(formula, data, models, p.list, group=NULL, 
                   Kukrep=1, bs.n=0, nCPU=1, maxit=1000, 
-                  fit.n = 5, pibeta=0.05) {
+                  fit.n = 3, pibeta=0.05) {
   #   UseMethod("RRlin")
   
   # formula interface: from formula to design matrix
