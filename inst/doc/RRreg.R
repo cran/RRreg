@@ -25,6 +25,12 @@ summary(log1)
 glm(formula=true~cov, data=data.W, family=binomial(link = "logit"))
 
 ## ------------------------------------------------------------------------
+# make random cluster:
+data.W$cluster <- c("a", "b")
+mixmod <- RRmixed(response ~ cov + (1 | cluster), data=data.W, model = "Warner", p = .2)
+mixmod
+
+## ------------------------------------------------------------------------
 lin1 <- RRlin(formula=cov~response, data=data.W, models="Warner", p.list=.2, bs.n=0, fit.n=1)
 summary(lin1)
 
@@ -60,6 +66,9 @@ logit1 <- coef(fit) %*% c(1, 1, mean(z.age), mean(z.age))
 cat(exp(logit1) / (1+ exp(logit1)))
 logit2 <- coef(fit) %*% c(1, 0, mean(z.age), 0)
 cat(exp(logit2) / (1+ exp(logit2)))
+
+## ------------------------------------------------------------------------
+getPW(model = "FR", p = c(.1, .1))
 
 ## ------------------------------------------------------------------------
 ### generate 2 two-group RR variables and a continuous covariate

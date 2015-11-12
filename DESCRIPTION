@@ -8,24 +8,27 @@ Authors@R: c(person( given="Daniel
 Author: Daniel W. Heck [aut, cre], Morten Moshagen [aut]
 Maintainer: Daniel W. Heck <dheck@mail.uni-mannheim.de>
 Depends: R (>= 3.0.0)
-Imports: parallel, doParallel, foreach, stats, grDevices, graphics
+Imports: parallel, doParallel, foreach, stats, grDevices, graphics,
+        lme4
 Suggests: knitr
 Description: Univariate and multivariate methods to analyze
     randomized response (RR) survey designs (e.g., Warner, S. L. (1965).
     Randomized response: A survey technique for eliminating evasive answer
     bias. Journal of the American Statistical Association, 60, 63–69).
     Besides univariate estimates of true proportions, RR variables can be used
-    for correlations, as dependent variable in a logistic regression and as
-    predictors in a linear regression. For simulation and bootstrap purposes,
-    RR data can be generated according to several models.
+    for correlations, as dependent variable in a logistic regression (with or
+    without random effects), as predictors in a linear regression, or as
+    dependent variable in a beta-binomial ANOVA. For simulation and bootstrap
+    purposes, RR data can be generated according to several models.
 License: GPL-2
 Encoding: UTF-8
 LazyLoad: yes
 URL: http://psycho3.uni-mannheim.de/Home/Research/Software/RRreg/
 VignetteBuilder: knitr
-Version: 0.4.1
-Date: 2015-07-24
+Version: 0.5.0
+Date: 2015-11-12
+RoxygenNote: 5.0.0
 NeedsCompilation: no
-Packaged: 2015-07-24 15:53:33 UTC; Daniel
+Packaged: 2015-11-12 10:45:43 UTC; Daniel
 Repository: CRAN
-Date/Publication: 2015-07-28 23:19:02
+Date/Publication: 2015-11-12 13:08:45

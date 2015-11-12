@@ -1,3 +1,13 @@
+RRreg 0.5.0 (November 2015)
+===========
+
+* New function RRmixed() to fit logistic RR regressions with mixed effects (random slope/intercept in hierarchical models) using RR data based on lme4
+* New function getPW() to get misclassification matrices for the implemented RR designs
+* New data set 'minarets' for demonstration (type: data(minarets) )
+* Proper maximization in RRuni() to get ML estimates (instead of moment estimates)
+* Possibility to use a "custom"" RR misclassification matrix in RRuni, RRgen, and RRlog
+
+
 RRreg 0.4.1 (July 2015)
 ===========
 

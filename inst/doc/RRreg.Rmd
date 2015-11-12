@@ -1,28 +1,29 @@
 ---
+title: "RRreg manual"
 output:
   html_document:
     css: markdown10.css
+    highlight: textmate
+    number_sections: yes
     self_contained: no
     toc: yes
+    toc_depth: 2
   pdf_document:
     toc: yes
+    toc_depth: 2
 ---
 <!--
 %\VignetteEngine{knitr::knitr}
 %\VignetteIndexEntry{An Introduction to the RRreg package}
 -->
 
-RRreg manual
-========================
-
 Correlation and regression analysis for randomized response designs
 
 Daniel W. Heck, <dheck@mail.uni-mannheim.de>
 
-Last update: November 18th, 2014
+Last update: October 2015
 
-1) Introduction
----------------------------------------
+# Introduction
 
 The randomized response (RR) design was developed by Warner (1965) to allow for complete anonymity of the respondents in surveys and thus to reduce effects of social desirability. In general, some kind of random noise (e.g., throwing a pair of dices) is added to the true response. Whereas the prevalence of a senstive attribute (by convention termed $\pi$) can still be estimated at the group level, an individual response does not disclose the true state of the respondent. Accordingly, RR data require adapted models and formulas for multivariate analysis, implemented in the package `RRreg`.
 
@@ -31,24 +32,26 @@ The main functions provide the following functionality and are explained in more
 * [RRuni](#RRuni): simple univariate analysis, i.e., prevalence estimates
 * [RRcor](#RRcor): bivariate correlations including RR variables
 * [RRlog](#RRlog): logistic regression with an RR variable as criterion
+* [RRmixed](#RRmixed): logistic RR regression including random effects (nested or hierarchical data)
 * [RRlin](#RRlin): linear regression with a continuous, non-RR criterion including RR variables as predictors
 
-Additionally, two functions can be used to generate data for robustness studies, bootstrap estimates and testing purposes:
+Additionally, three functions can be used to generate data for robustness studies, power analysis, bootstrap estimates, and other testing purposes:
 
 * [RRgen](#RRgen): generates a single data frame including true states, RR responses, and group memberships
-* [RRsimu](#RRsimu): Monte Carlo simulation to test `RRuni`,`RRcor` and `RRlog`, either for one RR and one continuous non-RR variable or for two RR variables
+* [RRsimu](#RRsimu): Monte Carlo simulation to test `RRuni`,`RRcor`, `RRlog`, and `RRlin` either for one RR and one continuous non-RR variable or for two RR variables (only `RRcor`)
+* [powerplot](#powerplot): Monte Carlo simulation to plot the power of the methods `RRuni`,`RRcor`, `RRlog`, or `RRlin` either for one RR and one continuous non-RR variable
+
 
 In the following, cocaine abuse is used as a running example to demonstrate the RR analysis with `RRreg`. The following RR designs are included in the package: [UQTknown](#UQTknown), [Mangat](#Mangat), [Kuk](#Kuk), [FR](#FR), [Crosswise](#Crosswise), [UQTunknown](#UQTunknown), [CDM](#CDM), [CDMsym](#CDMsym), [SLD](#SLD)
 
 &nbsp; 
 
-2) Statistical functions
----------------------------------------
+# Statistical functions
 
 <a id="Warner"></a>
 <a id="RRuni"></a>
 
-### 2.1) Univariate analysis
+### Univariate analysis
 
 The original RR design proposed by Warner in 1965 works as follows: With randomization probability `p`, participants are supposed to answer to the question 'Have you ever used cocaine?', and with counter-probability `1-p`, the question is reversed, i.e., 'Have you never used cocaine?'. As a randomization device, dices or coin flips with known probabilities may be used. The model is depicted in the following figure:
 
@@ -78,7 +81,7 @@ The `response` variable containing 1 for *yes* and 0 for *no* responses can eith
 
 &nbsp; 
 
-### 2.2) Multivariate analysis
+### Multivariate analysis
 
 First, we generate a continuous, non-RR variable. According to our simulation, respondents carrying the sensitive attribute (i.e., cocaine users) have higher scores on this covariate:
 
@@ -130,6 +133,32 @@ glm(formula=true~cov, data=data.W, family=binomial(link = "logit"))
 
 &nbsp; 
 
+<a id="RRmixed"></a>
+
+#### RRmixed
+
+If the data are nested (e.g., students within schools), the logistic regression can be extended to include random effects. In R, the package `lme4` allows for flexible generalized linear mixed models (GLMMs) which include RR logistic regression as a special case. The function `RRmixed` uses the function `glmer`of `lme4` and an adjusted link function. However, at the moment this can only be used with one-group RR models that assume the same link function for all responses.
+
+Some typical examples how to specify models fia the `formula` are:
+
+* random effects: `rrt ~ covariate + (1 | cluster)`
+* random slopes: `rrt ~ covariate + (0+covariate | cluster)`
+* both: `rrt ~ covariate +(covariate | cluster)`
+* level-2 predictors: `rrt ~ covariate + lev2pred + (1 | cluster)` (the predictor lev2pred must have constant values within clusters)
+
+The function `RRmixed` is used as follows:
+
+```{r}
+# make random cluster:
+data.W$cluster <- c("a", "b")
+mixmod <- RRmixed(response ~ cov + (1 | cluster), data=data.W, model = "Warner", p = .2)
+mixmod
+```
+
+* van den Hout, A., van der Heijden, P. G., & Gilchrist, R. (2007). The Logistic Regression Model with Response Variables Subject to Randomized Response. *Computational Statistics & Data Analysis*, 51, 6060–6069.
+
+&nbsp; 
+
 <a id="RRlin"></a>
 
 #### RRlin
@@ -176,8 +205,9 @@ To include many RR variables as predictors, very large sample sizes are required
 
 &nbsp; 
 
-3) Testing RR vs. direct questioning (DQ)
----------------------------------
+
+
+# Testing RR vs. direct questioning (DQ)
 
 The method `RRlog` can be used to test whether an RR design leads to higher prevalence estimates than direct questioning (DQ). For one-groups designs (such as the Warner model), define a vector with indices 0 for all participants who were questioned by DQ and indices 1 for participants questioned by the RR design and include this dummy variable as predictor. For two-group designs (see below), define a dummy variable contrasting DQ and RR as before, and define a vector with indices 0 for participants questioned by DQ and indices 1 and 2 denoting the group of the RR design.
 
@@ -185,7 +215,8 @@ If the regression coefficient of the dummy predictor is significant, this indica
 
 Furthermore, interactions between question format (RR vs. DQ) and other predictors can be tested. For instance, one might want to know whether the regression coefficient of a predictor (e.g., age) differs between question formats (e.g., whether the RR format serves as a more valid criterion). Interactions are included by `formula= RR ~ format + age + format:age`. 
 
-An example could be:
+An example is:
+
 ```{r}
 # generate data with different prevalence rates for RR and DQ
 RR <- RRgen(n=500, pi=.4, model="Warner", p=.35)
@@ -207,8 +238,7 @@ cat(exp(logit2) / (1+ exp(logit2)))
 
 &nbsp; 
 
-4) Other RR models using one group
----------------------------------------
+# Other RR models using one group
 
 In the following, several other available RR models are listed, which can be used throughout the package functions. For each model, the randomization probability `p` must be given as defined below.
 
@@ -216,7 +246,7 @@ In the following, several other available RR models are listed, which can be use
 
 <a id="UQTknown"></a>
 
-#### 4.1) Unrelated question techique with known prevalance (UQTknown)
+#### Unrelated question techique with known prevalance (UQTknown)
 
 `model = 'UQTknown'`
 
@@ -230,7 +260,7 @@ In this RR design, participants either respond to the sensitive question or to a
 
 <a id="Mangat"></a>
 
-#### 4.2) Mangat
+#### Mangat
 
 `model = 'Mangat'`
 
@@ -244,7 +274,7 @@ In Mangat's model, carriers of the critical attribute are always provided with t
 
 <a id="Kuk"></a>
 
-#### 4.3) Kuk
+#### Kuk
 
 `model = 'Kuk'`
 
@@ -262,7 +292,7 @@ Note that the procedure can be applied repeatedly to obtain more reliable estima
 
 <a id="FR"></a>
 
-#### 4.4) Forced response (FR)
+#### Forced response (FR)
 
 `model = 'FR'`
 
@@ -290,7 +320,7 @@ For instance, having the categories `0,1,2,3,4` and `complyRates=c(1,1,1,.8,.5),
 
 <a id="Crosswise"></a>
 
-#### 4.5) Crosswise model
+#### Crosswise model
 
 `model = 'Crosswise'`
 
@@ -307,10 +337,29 @@ For the irrelevant question, the prevalence of *yes* responses  has to be known 
 
 &nbsp;
 
+<a id="custom"></a>
+
+#### RR as Misclassification
+
+`model = 'custom'`
+
+RR designs can be understood as a misclassification mechanisms: The true latent states/responses are perturbed randomly according to a known randomization scheme. This randomization scheme can be described in form of a matrix $PW$, where each entry $PW_{ji}$ gives the probability to give a response $j$ if the true state is $i$.
+
+The package `RRreg` contains the function `getPW` to obtain this misclassification matrix for the implemented designs. The forced response design with proabilities `P=c(.1,.2)`, for instance, can be described by:
+
+```{r}
+getPW(model = "FR", p = c(.1, .1))
+```
+
+To specify a custom misclassification matrix, the arguments `model = "custom"` and a randomization matrix `p=matrix(p00, p10, p01, p11), ncol=2, nrow=2)` are required. The approach generalizes to categorical, non-binary data by specifying an $m \times M$ matrix. Note that for two-group designs, the matrix $PW$ depends on the groupd and on a second parameter, which needs to be estimated from the data (e.g., the unknown prevalence in `"UQTunknown"`). 
+
+* van den Hout, A., & Kooiman, P. (2006). Estimating the Linear Regression Model with Categorical Covariates Subject to Randomized Response. *Computational Statistics & Data Analysis*, 50(11), 3311–3323.
+
+&nbsp;
+
 <a id="two-group"></a>
 
-5) Two-group models
----------------------------------------
+# Two-group models
 
 For several reasons, RR designs were proposed that require two independent random samples (groups). Historically, the second group was used to estimate the prevalence of the irrelevant question in the UQT. Alternatively, two groups allow for a second parameter, quantifying cheating or compliance with the RR procedure. 
 
@@ -322,7 +371,7 @@ Note that in the functions `RRcor` and `RRlin`, the second parameter of these tw
 
 <a id="UQTunknown"></a>
 
-#### 5.1) Unrelated question techique with unknown prevalance (UQTunknown)
+#### Unrelated question techique with unknown prevalance (UQTunknown)
 
 `model = 'UQTunknown'`
 
@@ -347,7 +396,7 @@ Note that Moor's variant of the UQT with unknown prevalence can be used by setti
 
 <a id="CDM"></a>
 
-#### 5.2) Cheating detection model (CDM)
+#### Cheating detection model (CDM)
 
 `model = 'CDM'`
 
@@ -368,7 +417,7 @@ Because of the assumption of three distinct groups, the CDM is not available in 
 
 <a id="CDMsym"></a>
 
-#### 5.3) Symmetric CDM (CDMsym)
+#### Symmetric CDM (CDMsym)
 
 `model = 'CDMsym'`
 
@@ -394,7 +443,7 @@ The randomization probabilities must meet these restrictions:
 
 <a id="SLD"></a>
 
-#### 5.4) Stochastic lie detector (SLD)
+#### Stochastic lie detector (SLD)
 
 `model = 'SLD'`
 
@@ -415,7 +464,7 @@ The randomization probabilities must differ across groups to render the model id
 
 <a id="two-group-code-example"></a>
  
-#### 5.5) Code examples for two-group models
+#### Code examples for two-group models
 
 ```{r}
 ### generate 2 two-group RR variables and a continuous covariate
