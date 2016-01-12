@@ -1,4 +1,4 @@
-ac252fb4d26bca4beb02ba4bd946ab74 *DESCRIPTION
+8b251a6c8bee3f15f5bb996ee4c42fd1 *DESCRIPTION
 e3ac1b2037b9536f55c76c54c276385f *NAMESPACE
 3437ed9809d4def0d9245b767955359f *NEWS
 04f2cb78ac138040d8ee4400f1522d06 *R/RRcheck.R
@@ -8,10 +8,10 @@ db1be0d80b46253de13b0402f9c59f29 *R/RRcor.models.R
 680ee6b0cace2dfcce4553d1547f91bb *R/RRlin.R
 555f0442c31f6605223cacfe5e58b661 *R/RRlin.getPW.R
 0299f05509db7140cb792a5deed77923 *R/RRlin.ll.R
-b79a99ecfe1410df606f10fb024b333c *R/RRlog.R
+e1fbe67ddfd3aec33e263f6719d28bf3 *R/RRlog.R
 f210a5d196276458d6081ffc9c007120 *R/RRlog_fit.R
 98c829d1c6d3601686c8444023a030c3 *R/RRmixed.R
-495a63fab605c02fdb56154813a2ed26 *R/RRreg-package.R
+5c0e040e604b2d0169e480b89250235b *R/RRreg-package.R
 af02477af877d25c7217f5c2cc9ba881 *R/RRsimu.R
 4630186acbf46a12c7ba7f3f55a334c8 *R/RRuni.R
 c9c39a4b5383770a5933c63e8ec90b45 *R/RRuni.models.R
@@ -20,10 +20,10 @@ c9c39a4b5383770a5933c63e8ec90b45 *R/RRuni.models.R
 77d4ff0f0abca8de73aa1393c23afa27 *R/powerplot.R
 f971b60eec237e26900aecb0070d4019 *build/vignette.rds
 aee8d7d00ae66d5cb068056c0beeddde *data/minarets.RData
-3be8a125088d068d10147b26b7409010 *inst/CITATION
+9fddccb2463f83d53e3b9ecd1f210990 *inst/CITATION
 d2245c01cd83d7f16ed4bd08f1f20955 *inst/doc/RRreg.R
-28609606542b73fa12a21f7a39fb7557 *inst/doc/RRreg.Rmd
-301d6bf277bb7b16efdf457db1128436 *inst/doc/RRreg.html
+c7be28bd4fcebd9a1b7baff0b0dad36b *inst/doc/RRreg.Rmd
+3aea637ebcdd450da8f4d0d687b1b71e *inst/doc/RRreg.html
 4df4ee1c6334688d5770b2fa76fac657 *man/RRcor.Rd
 712c4027ea9c9d4e65f3e676f44cdcda *man/RRgen.Rd
 d64d176644c82b9296d9943349174edc *man/RRlin.Rd
@@ -38,7 +38,7 @@ b85c650a47020c17e382707e0f0fa856 *man/plot.RRlog.Rd
 dbdeda653484a898c8b3f08cf880504e *man/plot.powerplot.Rd
 33824a3b206a7b2f97060d7c6be3bd5f *man/powerplot.Rd
 fa1e78da69d1c404c7f63e58aa3ff74b *man/predict.RRlog.Rd
-28609606542b73fa12a21f7a39fb7557 *vignettes/RRreg.Rmd
+c7be28bd4fcebd9a1b7baff0b0dad36b *vignettes/RRreg.Rmd
 ca38b04650f472c1b2386af9c3c19ed7 *vignettes/figures/CDM.jpg
 5ac6d1283cd49489ae3329c0b39a79d8 *vignettes/figures/CDMsym.jpg
 0f59f2ac4a17217debec979caa2afb20 *vignettes/figures/Crosswise.jpg
