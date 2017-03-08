@@ -12,7 +12,7 @@ RRlin(formula, data, models, p.list, group = NULL, Kukrep = 1, bs.n = 0,
 
 \item{data}{an optional data frame, list or environment, containing the variables in the model.}
 
-\item{models}{character vector specifying RR model(s) in order of appearance in formula. Available models: \code{"Warner"}, \code{"UQTknown"}, \code{"UQTunknown"}, \code{"Mangat"}, \code{"Kuk"}, \code{"FR"}, \code{"Crosswise"}, \code{"CDM"}, \code{"CDMsym"}, \code{"SLD"}, \code{"custom"} (custom: a randomization matrix must be specified in the corresponding element of \code{p.list}, where the entry \code{p[i,j]} defines the probability of responding i (i-th row) given a true state of j (j-th column)).}
+\item{models}{character vector specifying RR model(s) in order of appearance in formula. Available models: \code{"Warner"}, \code{"UQTknown"}, \code{"UQTunknown"}, \code{"Mangat"}, \code{"Kuk"}, \code{"FR"}, \code{"Crosswise"}, \code{"Triangular"}, \code{"CDM"}, \code{"CDMsym"}, \code{"SLD"}, \code{"custom"} (custom: a randomization matrix must be specified in the corresponding element of \code{p.list}, where the entry \code{p[i,j]} defines the probability of responding i (i-th row) given a true state of j (j-th column)).}
 
 \item{p.list}{list of randomization probabilities for RR models in the same order as specified in \code{models}. Note, that the randomization probabilities p must be provided in a \code{\link{list}}, e.g., \code{list(p=c(.2, .3))}. See \code{\link{RRuni}} for details.}
 
@@ -55,13 +55,12 @@ linreg <- RRlin(depvar~response+FR+nonRR, data=dat,
 summary(linreg)
 summary(lm(depvar~true +trueFR+nonRR, data=dat))
 }
-\author{
-Daniel W. Heck
-}
 \references{
 van den Hout, A., & Kooiman, P. (2006). Estimating the linear regression model with categorical covariates subject to randomized response. \emph{Computational Statistics & Data Analysis, 50}, 3311-3323.
 }
 \seealso{
 \code{vignette('RRreg')} or \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html} for a detailed description of the RR models and the appropriate definition of \code{p}
 }
-
+\author{
+Daniel W. Heck
+}

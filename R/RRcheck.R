@@ -50,7 +50,8 @@ RRcheck.p <- function(model,p){
 
 RRcheck.xp <- function(model,y,p,vectorName){
   RRcheck.p (model,p)
-  if (model %in% c("Warner","Crosswise","UQTknown","UQTknown","Mangat","SLD","CDM") &&
+  if (model %in% c("Warner","Crosswise","Triangular","UQTknown",
+                   "UQTknown","Mangat","SLD","CDM") &&
         (length(table(y))!=2 | min(y)!=0 | max(y)!= 1) ){
     warning(paste0("For the model: '",model,"' , '",vectorName,"' must be a numerical vector containing values 0 and 1"))
   }
@@ -140,6 +141,8 @@ RRcheck.pi <- function(model,pi,n){
     if (pi<0 || pi>1){
       warning("True proportion 'pi' has to be in the interval [0,1]");
     }
+    if(length(pi) > 2)
+      warning("Only first entry of pi.true is used to generate data!")
   }
 }
 

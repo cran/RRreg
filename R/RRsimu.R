@@ -37,9 +37,6 @@
 #' # mcsim <-  RRsimu(numRep=100, n=300, pi=.4, 
 #' #                  model="Warner", p=.2, cor=.3)
 #' # print(mcsim)
-#' @import doParallel
-#' @import parallel
-#' @import foreach
 #' @export
 RRsimu <- function(numRep, n, pi, model, p, cor=0, b.log=0, 
                    complyRates=c(1,1), sysBias=c(0,0), 
@@ -49,7 +46,7 @@ RRsimu <- function(numRep, n, pi, model, p, cor=0, b.log=0,
   try(stopCluster(cl.tmp), silent = T)
   
   modelNames <- c("Warner","UQTknown","UQTunknown","Mangat","Kuk",
-                  "FR","Crosswise","direct","CDM","CDMsym","SLD","custom")
+                  "FR","Crosswise","Triangular","direct","CDM","CDMsym","SLD","custom")
   model <- pmatch(model, modelNames, duplicates.ok=T )
   model <- modelNames[model]
   
