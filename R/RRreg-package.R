@@ -6,8 +6,6 @@
 #' \tabular{ll}{
 #' Package: \tab RRreg\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.6.2\cr
-#' Date: \tab 2017-03-07\cr
 #' Depends: \tab R (>= 3.0.0)\cr
 #' Imports: \tab parallel, doParallel, foreach, stats, grDevices, graphics, lme4\cr
 #' Suggests: \tab knitr\cr
@@ -15,7 +13,7 @@
 #' License: \tab GPL-2\cr
 # LazyLoad: \tab yes\cr
 #' URL: \tab \url{http://psycho3.uni-mannheim.de/Home/Research/Software/RRreg}\cr
-# Vignette: \tab \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html}\cr
+# Vignette: \tab \url{http://www.dwheck.de/separate_content/RRregManual/index.html}\cr
 #' }
 #' 
 #' @aliases RRreg-package RRreg
@@ -33,7 +31,8 @@
 #' @importFrom foreach foreach %dopar%
 #' @importFrom lme4 glmer
 #' @references 
-#' Warner, S. L. (1965). Randomized response: A survey technique for eliminating evasive answer bias. \emph{Journal of the American Statistical Association, 60}, 63–69.
+#' Warner, S. L. (1965). Randomized response: A survey technique for eliminating 
+#' evasive answer bias. \emph{Journal of the American Statistical Association, 60}, 63–69.
 "_PACKAGE"
 
 #' Minaret Data

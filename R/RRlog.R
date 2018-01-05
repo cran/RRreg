@@ -22,7 +22,7 @@
 #' @param ... ignored
 #' @details The logistic regression model is fitted first by an EM algorithm, in which the dependend RR variable is treated as a misclassified binary variable (Magder & Hughes, 1997). The results are used as starting values for a Newton-Raphson based optimization by \code{\link{optim}}.
 #' @author Daniel W. Heck
-#' @seealso \code{vignette('RRreg')} or \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
+#' @seealso \code{vignette('RRreg')} or \url{http://www.dwheck.de/separate_content/RRregManual/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
 #' @return Returns an object \code{RRlog} which can be analysed by the generic method \code{\link{summary}}
 #' @references van den Hout, A., van der Heijden, P. G., & Gilchrist, R. (2007). The logistic regression model with response variables subject to randomized response. \emph{Computational Statistics & Data Analysis, 51}, 6060-6069. 
 #' @examples
@@ -219,12 +219,21 @@ RRlog.default <-function(formula, data, model, p, group, n.response=1, LR.test=T
   }
   try({
     latent.values <- as.vector( x %*% coef)
-    est$fitted <- exp(latent.values)/(1+exp(latent.values))
-    ## pi schätzen
+    if (!is2group(model)){
+      P <- getPW(model, p)
+      est$fitted <- P[2,1]+(P[2,2] - P[2,1])/(1+exp(-latent.values))
+    } else{
+      est$fitted <- rep(NA, length(latent.values))
+      for (i in 1:2){
+        P <- getPW(model, p, par2fix, group = i)
+        est$fitted[group == i] <- P[2,1]+(P[2,2] - P[2,1])/(1+exp(-latent.values[group == i]))     
+      }
+    }
+    ## pi estimate
     e <- exp(latent.values)
-    est$pi <- mean(e/(1+e))
+    est$pi <- mean(e/(1+e))  #mean cheating rate
     est$fit.n <- fit.n
-  }, silent=T)
+  }, silent = TRUE)
   
   # SE: Scheers & Dayton 1988: propagation of error  page 970 
   # ableitung von pi = e/(1+e) nach den coeffizienten (gradient)

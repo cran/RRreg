@@ -13,8 +13,6 @@ Univariate and multivariate methods for randomized response (RR) survey designs 
 \tabular{ll}{
 Package: \tab RRreg\cr
 Type: \tab Package\cr
-Version: \tab 0.6.2\cr
-Date: \tab 2017-03-07\cr
 Depends: \tab R (>= 3.0.0)\cr
 Imports: \tab parallel, doParallel, foreach, stats, grDevices, graphics, lme4\cr
 Suggests: \tab knitr\cr
@@ -23,7 +21,8 @@ URL: \tab \url{http://psycho3.uni-mannheim.de/Home/Research/Software/RRreg}\cr
 }
 }
 \references{
-Warner, S. L. (1965). Randomized response: A survey technique for eliminating evasive answer bias. \emph{Journal of the American Statistical Association, 60}, 63–69.
+Warner, S. L. (1965). Randomized response: A survey technique for eliminating 
+evasive answer bias. \emph{Journal of the American Statistical Association, 60}, 63–69.
 }
 \seealso{
 Useful links:

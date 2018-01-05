@@ -1,12 +1,14 @@
 #' Univariate analysis of randomized response data
 #' 
 #' Analyse a data vector \code{response} with a specified RR model (e.g., \code{Warner}) with known randomization probability \code{p}
-#' @param response either vector of responses containing 0='no' and 1='yes' or name of response variable in \code{data}. In Kuk's card playing method (\code{Kuk}), the observed response variable gives the number of red cards. For the Forced Response (\code{FR}) model, response values are integers from 0 to (m-1), where 'm' is the number of response categories. 
+#' @param response either vector of responses containing 0='no' and 1='yes' or name of response variable in \code{data}.For the Forced Response (\code{FR}) model, response values are integers from 0 to (m-1), where 'm' is the number of response categories.  In Kuk's card playing method (\code{Kuk}), the observed response variable gives the number of red cards. 
 #' @param data optional \code{data.frame} containing the response variable
-#' @param model defines RR model. Available models: \code{"Warner"}, \code{"UQTknown"}, \code{"UQTunknown"}, \code{"Mangat"}, \code{"Kuk"},\code{"FR"}, \code{"Crosswise"}, \code{"Triangular"}, \code{"CDM"}, \code{"CDMsym"}, \code{"SLD"}, \code{"mix.norm"}, \code{"mix.exp"},\code{"mix.unknown"}, or \code{"custom"}. See argument \code{p} or type \code{vignette('RRreg')} for detailed specifications.
+#' @param model defines RR model. Available models: \code{"Warner"}, \code{"UQTknown"}, \code{"UQTunknown"}, \code{"Mangat"}, \code{"FR"}, \code{"Kuk"},\code{"Crosswise"}, \code{"Triangular"}, \code{"CDM"}, \code{"CDMsym"}, \code{"SLD"}, \code{"mix.norm"}, \code{"mix.exp"},\code{"mix.unknown"}, or \code{"custom"}. See argument \code{p} or type \code{vignette('RRreg')} for detailed specifications.
 #' @param p randomization probability (see details or \code{vignette("RRreg")})
 #' @param group a group vector of the same length as \code{response} containing values 1 or 2, only required for two-group models, which specify different randomization probabilities for two groups, e.g., \code{CDM} or \code{SLD}. If a data.frame \code{data} is provided, the variable \code{group} is searched within it.
 #' @param MLest whether to use \code{optim} to get ML instead of moment estimates (only relevant if pi is outside of [0,1])
+#' @param Kukrep number of repetitions of Kuk's card-drawing method
+#' 
 #' @details Each RR design \code{model} differs in the definition of the randomization probability \code{p}, which is defined as a single probability for
 #'  \itemize{
 #'  \item \code{"Warner"}: Probabiltiy to get sensitive Question 
@@ -32,7 +34,7 @@
 #'  \item \code{"mix.unknown"}: 2-valued vector - Prob. of responding to sensitive question in group 1 and 2, respectively
 #'  }
 #' @return an \code{RRuni} object, can by analyzed by using \code{\link{summary}}
-#' @seealso \code{vignette('RRreg')} or \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
+#' @seealso \code{vignette('RRreg')} or \url{http://www.dwheck.de/separate_content/RRregManual/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
 #' @examples 
 #' # Generate responses of 1000 people according to Warner's model
 #' # with an underlying true proportion of .3
@@ -49,7 +51,8 @@
 #'                   p=c(.2,.8), group=genData2$group)
 #' summary(analyse2)
 #' @export
-RRuni <- function(response, data, model, p, group = NULL, MLest=TRUE){
+RRuni <- function(response, data, model, p, group = NULL, 
+                  MLest=TRUE, Kukrep = 1){
   # extract column 'response' from data.frame 'data'
   if ( !missing(data)){
     try( {data <- as.data.frame(data)
@@ -74,7 +77,7 @@ RRuni <- function(response, data, model, p, group = NULL, MLest=TRUE){
                 "FR" = RRuni.FR(response,p),
                 "custom" = RRuni.custom(response, p, group),
                 
-                "Kuk" = RRuni.Kuk(response,p),
+                "Kuk" = RRuni.Kuk(response,p, Kukrep),
                 "UQTunknown" = RRuni.UQTunknown(response,p,group),
                 "Crosswise" = RRuni.Crosswise(response,p),
                 "Triangular" = RRuni.Triangular(response,p),
@@ -95,7 +98,7 @@ RRuni <- function(response, data, model, p, group = NULL, MLest=TRUE){
                                    "CDM" = res$gamma <= 0 | res$gamma >= 1,
                                    "CDMsym" = res$gamma <= 0 | res$gamma >= 1)
   }
-  if (MLest  && estNotML && !(model %in% c("mix.norm","mix.exp", "mix.unknown")) ){ 
+  if (MLest  && estNotML &&  !(model %in% c("mix.norm","mix.exp", "mix.unknown")) ){
     # starting values
     start <- min(max(RRcheck.param(res$pi),1e-4),1-1e-4)
     # adjust for categorical responses:
@@ -110,8 +113,9 @@ RRuni <- function(response, data, model, p, group = NULL, MLest=TRUE){
     
     # optimization
     oo <- optim(start, fn=RRuni.ll, method="L-BFGS-B", lower=1e-8, upper=1-1e-8, hessian=T,
-                model=model, response=response, pp=p, group=group, ncat=ncat)
-    SE <- sqrt(diag(solve(oo$hessian)))
+                model=model, response=response, pp=p, group=group, ncat=ncat, Kukrep=Kukrep)
+    SE <- rep(NA, length(oo$par))
+    try(SE <- sqrt(diag(solve(oo$hessian))))
     
     res$pi <- oo$par[1] 
     res$piSE <- SE[1]
@@ -221,7 +225,7 @@ print.summary.RRuni<-function(x,...){
   cat("\n")
   printCoefmat( round(x$coefficients,6))
   if (x$model=="SLD"){
-    cat("\n(for the parameter t, i.e. probability of true responding of carriers,
+    cat("\n(for the parameter t, i.e., the probability of true responding of carriers,
  the test is H0: t=1; H1: t<1 and the one-sided probability value is given)")
   }
 }

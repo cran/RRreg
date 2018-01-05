@@ -24,7 +24,7 @@
 #' 
 #' Note that the continuous RR model \code{mix.norm} with the randomization parameter \code{p=c(p.truth, mean, SD)} assumes that participants respond either to the sensitive question with probability \code{p.truth} or otherwise to a known masking distribution with known mean and SD. The estimated correlation only depends on the mean and SD and does not require normality. However, the assumption of normality is used in the parametric bootstrap to obtain standard errors.
 #' 
-#' @seealso \code{vignette('RRreg')} or \url{https://dl.dropboxusercontent.com/u/21456540/RRreg/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
+#' @seealso \code{vignette('RRreg')} or \url{http://www.dwheck.de/separate_content/RRregManual/index.html} for a detailed description of the RR models and the appropriate definition of \code{p} 
 #' @references Fox, J. A., & Tracy, P. E. (1984). Measuring associations with randomized response. \emph{Social Science Research, 13}, 188-197.
 #' @examples 
 #' # generate first RR variable
@@ -47,7 +47,8 @@
 #' RRcor(x=gData[,c("response","cov","UQTresp")],
 #'       models=c("Kuk","d","UQTknown"),p.list= list(p1,p2) )
 #' @export
-RRcor <- function(x, y=NULL, models, p.list, group=NULL, bs.n=0, bs.type=c("se.n","se.p","pval"), nCPU=1){
+RRcor <- function(x, y = NULL, models, p.list, 
+                  group = NULL, bs.n = 0, bs.type = c("se.n","se.p","pval"), nCPU = 1){
   
   # input handling  (abkopiert von function 'cor' ; na.method funktioniert nicht
   #   na.method <- pmatch(use, c("all.obs", "complete.obs", "pairwise.complete.obs", 
@@ -113,7 +114,7 @@ RRcor <- function(x, y=NULL, models, p.list, group=NULL, bs.n=0, bs.type=c("se.n
   modelNames <- c("Warner","UQTknown","UQTunknown","Mangat",
                   "Kuk","FR","Crosswise","Triangular","direct","SLD", 
                   "mix.norm","mix.exp", "mix.unknown")
-  models <- pmatch(models, modelNames, duplicates.ok=T )
+  models <- pmatch(models, modelNames, duplicates.ok = TRUE )
   models <- modelNames[models]
   n <- nrow(X)
   
@@ -151,7 +152,8 @@ RRcor <- function(x, y=NULL, models, p.list, group=NULL, bs.n=0, bs.type=c("se.n
         group.mat[,i] <-  as.numeric(  group[,cnt])  
         cnt <- cnt+1
       }
-      est <- RRuni(X[,i],model=models[i],p=p.list[[i]],group=group.mat[,i],MLest=F)
+      est <- RRuni(X[,i], model=models[i], p=p.list[[i]], 
+                   group=group.mat[,i], MLest = FALSE)
       if(models[i] =="FR"){
         scale <- 1:length(est$pi)-1
         
@@ -312,11 +314,11 @@ n.mat[lower.tri(n.mat)] <- t(n.mat)[lower.tri(n.mat)]
 rownames(r) <- colnames(X)
 colnames(r) <- colnames(X)
 
-if (sum( r < -1, na.rm=T) >0){
+if (sum( r < -1, na.rm = TRUE) >0){
 #   warning("The corrected correlation was smaller than -1 and thus set to -1.")
   r[-r >1] <- -1
 }
-if (sum( r > 1, na.rm=T) >0){
+if (sum( r > 1, na.rm = TRUE) >0){
 #   warning("The corrected correlation was larger than 1 and thus set to 1.")
   r[r>1] <- 1
 }
@@ -356,19 +358,21 @@ for (i in 1:m){
         # how many RR variables in pairwise bootstrap?
         if(sum(models[c(i,j)] == "direct") <2){
           if(models[i] != "direct")
-            RRi <- RRuni(X[,i], model =models[i], p=p.list[[i]], group = group.mat[,i],MLest = T)
+            RRi <- RRuni(X[,i], model =models[i], p=p.list[[i]], 
+                         group = group.mat[,i], MLest = FALSE)
           if(models[j] != "direct")
-            RRj <- RRuni(X[,j], model =models[j], p=p.list[[j]], group = group.mat[,j],MLest = T)
+            RRj <- RRuni(X[,j], model =models[j], p=p.list[[j]], 
+                         group = group.mat[,j], MLest  = FALSE)
           # two RRs
           if(sum(models[c(i,j)] == "direct") ==0){
             if("se.p" %in% bs.type) 
               mcsim <- RRsimu(numRep=bs.n, n=n, pi=c(RRi$pi, RRj$pi), model = models[c(i,j)],
                             p=p.list[c(i,j)], cor=r[i,j], complyRates=list(ci, cj), sysBias=c(0,0),
-                            groupRatio=groupRatios[c(i,j)], method="RRcor", MLest=T, nCPU=nCPU)
+                            groupRatio=groupRatios[c(i,j)], method="RRcor", MLest = FALSE, nCPU=nCPU)
             if("pval" %in% bs.type){
               mcsim.h0 <- RRsimu(numRep=bs.n, n=n, pi=c(RRi$pi, RRj$pi), model = models[c(i,j)],
                               p=p.list[c(i,j)], cor=0, complyRates=list(ci, cj), sysBias=c(0,0),
-                              groupRatio=groupRatios[c(i,j)], method="RRcor", MLest=T, nCPU=nCPU)
+                              groupRatio=groupRatios[c(i,j)], method="RRcor", MLest = FALSE, nCPU=nCPU)
             }
           }else{
             # one RR, one nonRR variable
@@ -378,12 +382,12 @@ for (i in 1:m){
               mcsim <- RRsimu(numRep=bs.n, n=n, pi=ifelse(idx==i, RRi$pi, RRj$pi), model = models[idx],
                             p=unlist(p.list[idx]), cor=r[i,j], complyRates=ifelse(rep(idx,2)==i,ci, cj),
                             sysBias=c(0,0),
-                            groupRatio=groupRatios[idx], method="RRcor", MLest=T, nCPU=nCPU)
+                            groupRatio=groupRatios[idx], method="RRcor", MLest = FALSE, nCPU=nCPU)
             if("pval" %in% bs.type){
               mcsim.h0 <- RRsimu(numRep=bs.n, n=n, pi=ifelse(idx==i, RRi$pi, RRj$pi), model = models[idx],
                               p=unlist(p.list[idx]), cor=0, complyRates=ifelse(rep(idx,2)==i,ci, cj),
                               sysBias=c(0,0),
-                              groupRatio=groupRatios[idx], method="RRcor", MLest=T, nCPU=nCPU)
+                              groupRatio=groupRatios[idx], method="RRcor", MLest = FALSE, nCPU=nCPU)
             }
           }
           if ("se.p" %in% bs.type)
@@ -421,7 +425,7 @@ for (i in 1:m){
     if (nCPU == 1){
       bs.ests <- getBoot(rep=bs.n)   
     }else{
-      #       require(doParallel, quietly=T)
+      #       require(doParallel, quietly = TRUE)
       if (nCPU=="max"){
         try(nCPU <-  as.numeric(Sys.getenv('NUMBER_OF_PROCESSORS')))
         if (nCPU=="max") nCPU <- 2
@@ -435,7 +439,7 @@ for (i in 1:m){
     }
     #     print(apply(bs.ests,1:2,mean))
     bs.n.NA <- sum(is.na(bs.ests[2,1,]))
-    rSE.n <- apply(bs.ests,1:2,sd, na.rm=T)
+    rSE.n <- apply(bs.ests,1:2,sd, na.rm = TRUE)
     diag(rSE.n) <- NA
     dimnames(rSE.n) <- dimnames(rSE.p)
   }
