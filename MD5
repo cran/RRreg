@@ -1,6 +1,6 @@
-71afa1dad6f25b8db16cfea7dba632de *DESCRIPTION
+3b6cc4c4206fcdc198d0a223a6d4a16d *DESCRIPTION
 16e411699ae26324768cae982d14b490 *NAMESPACE
-4aacf79bfc965d7546bb93c33faf7057 *NEWS
+f240db8c02b8a641c29ae6c0d8ef2ed8 *NEWS
 66f2cf6de09dccf31602f2eeaf162d01 *R/RRcheck.R
 58945523cb94feab0953722565e2fffa *R/RRcor.R
 213caac51ad74886592e51a641f8cff2 *R/RRcor.models.R
@@ -11,7 +11,7 @@
 e10d1fe855ca221f125b7e5795a2ce1f *R/RRlog.R
 8646206ec6fd4170630e55fc31669271 *R/RRlog_check.R
 e148470f5d82811f80acf17cb21b3e28 *R/RRlog_fit.R
-b22cf845c38ba0d7afe97d5bba3154d0 *R/RRmixed.R
+1944befaec4b23d40993b9a296008c9a *R/RRmixed.R
 5b4444901f73fdd294acd90c0e0720b6 *R/RRreg-package.R
 5bfc01073433c1f7b2bbf6ae87b2b738 *R/RRsimu.R
 3ae993509c219bc971db0d25dc604bd9 *R/RRuni.R
@@ -24,12 +24,12 @@ aee8d7d00ae66d5cb068056c0beeddde *data/minarets.RData
 8fe515f992ac922e854512eb269777f2 *inst/CITATION
 d9777ee73c64f8aec33de49c7535065a *inst/doc/RRreg.R
 36ff7e511352b42297decc30670d11af *inst/doc/RRreg.Rmd
-92420ecf511432ee1d0b877c9b6b9c7c *inst/doc/RRreg.html
+e62d0e7e1e65ee1062b27d400a878b5e *inst/doc/RRreg.html
 334fdc80ab99604f78f99d7738bf3318 *man/RRcor.Rd
 d5bdb6452e0632f85744a08c36584b73 *man/RRgen.Rd
 e0d51bf66822d892c958eb64fd56cd45 *man/RRlin.Rd
 70f258df310d43dd76a679fce88c2cea *man/RRlog.Rd
-77ae4ff7f7cc371ef267f5705e0bcf55 *man/RRmixed.Rd
+7c644080439c923929aea7e09e122788 *man/RRmixed.Rd
 135acac9b48865c671d3ecf420b47529 *man/RRreg-package.Rd
 9cad02331a1b1479acc8bfe93b3b69e1 *man/RRsimu.Rd
 d841c6a3bade0a969c9e8a20062da0da *man/RRuni.Rd
