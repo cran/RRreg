@@ -4,20 +4,32 @@
 \alias{predict.RRlog}
 \title{Predict Individual Prevalences of the RR Attribute}
 \usage{
-\method{predict}{RRlog}(object, newdata = NULL, se.fit = FALSE, ci = 0.95,
-  ...)
+\method{predict}{RRlog}(object, newdata = NULL, type = "response",
+  se.fit = FALSE, ci = 0.95, ...)
 }
 \arguments{
 \item{object}{A fitted \code{\link{RRlog}} model}
 
 \item{newdata}{An optional vector, matrix, or data.frame with values on the predictor variables. Note that for matrices, the order of predictors should match the order of predictors in the formula. Uses the fitted values of the model if omitted.}
 
-\item{se.fit}{Get standard errors for the fitted/predicted values (using the error variance and df of the original RR model).}
+\item{type}{\code{"link"} gives predicted values on the logit scale, 
+\code{"response"} on the probability scale 
+(note: predicted probablities refer to having the sensitive RR attribute, not to the probability of responding).}
 
-\item{ci}{Confidence level for confidence interval. If 0, no boundaries are returned.}
+\item{se.fit}{Return standard errors for the predicted values in addition to confidence intervals.
+SEs on the logit scale are computed using the observed Fisher information from the fitted model. 
+Standard errors for the probability scale are computed using the delta method.}
+
+\item{ci}{Confidence level for confidence interval. Note that the confidence interval 
+on the probability scale is computed as the logit-transformed CI on the logit-scale
+(hence, the CI will in general not be symmetric). If 0, no boundaries are returned.}
 
 \item{...}{ignored}
 }
+\value{
+a matrix with columns for the point estimates, confidence interval, 
+    and standard errors (if \code{se.fit=TRUE}).
+}
 \description{
-Predictions of the loglinear RR model for the individual probabilities of having the sensitive RR attribute.
+Predictions of the loglinear RR model for the individual probabilities (or logits) of having the sensitive RR attribute.
 }
