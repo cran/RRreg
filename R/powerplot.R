@@ -2,6 +2,7 @@
 #' 
 #' Uses the function \code{\link{RRsimu}} to estimate the power of the multivariate RR methods (correlation \code{\link{RRcor}}, logistic regression \code{\link{RRlog}}, and/or linear regression \code{\link{RRlin}}.
 #' 
+#' @inheritParams RRsimu
 #' @param numRep number of boostrap replications
 #' @param n vector of samples sizes
 #' @param pi true prevalence
@@ -14,7 +15,6 @@
 #' @param sysBias probability of responding 'yes' in case of noncompliance
 #' @param groupRatio ratio of subgroups in two-group RR designs
 #' @param alpha type-I error used to estimate power
-#' @param nCPU number of CPUs to be used
 #' @param show.messages toggle printing of progress messages
 #' 
 #' @return
@@ -49,6 +49,12 @@ powerplot <- function(numRep, n=c(100,500,1000), pi, cor=c(0,.1,.3), b.log=NULL,
   nmet <- length(method)
   res <- array(NA, dim=c(length(n), length(cor), nmet), dimnames=list(n,cor, method))
   
+  if (is.numeric(nCPU) && nCPU > 1){
+    nCPU <- makeCluster(nCPU)
+    stop_cluster <- TRUE
+  } else {
+    stop_cluster <- FALSE
+  }
   for (nn in 1:length(n)){
     for (c in 1:ncor){
       sim <- RRsimu(numRep=numRep, n=n[nn], pi=pi, model=model, p=p, method=method,
@@ -62,8 +68,8 @@ powerplot <- function(numRep, n=c(100,500,1000), pi, cor=c(0,.1,.3), b.log=NULL,
       if(! any(is.na(names(sim$power))))
         dimnames(res)[[3]] <- names(sim$power)
     }
-    
   }
+  if (stop_cluster) stopCluster(nCPU)
   
 
   
