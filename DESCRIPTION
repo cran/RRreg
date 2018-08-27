@@ -34,10 +34,10 @@ Encoding: UTF-8
 LazyLoad: yes
 URL: http://psycho3.uni-mannheim.de/Home/Research/Software/RRreg/
 VignetteBuilder: knitr, R.rsp
-Version: 0.6.9
-Date: 2018-07-26
-RoxygenNote: 6.0.1
+Version: 0.7.0
+Date: 2018-08-27
+RoxygenNote: 6.1.0
 NeedsCompilation: no
-Packaged: 2018-07-26 09:55:17 UTC; Daniel
+Packaged: 2018-08-27 14:32:03 UTC; Daniel
 Repository: CRAN
-Date/Publication: 2018-07-26 11:30:03 UTC
+Date/Publication: 2018-08-27 15:04:28 UTC

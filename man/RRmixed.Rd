@@ -4,7 +4,8 @@
 \alias{RRmixed}
 \title{Mixed Effects Logistic Regression for RR Data}
 \usage{
-RRmixed(formula, data, model, p, const = 1e-04, adjust_control = FALSE, ...)
+RRmixed(formula, data, model, p, const = 1e-04, adjust_control = FALSE,
+  ...)
 }
 \arguments{
 \item{formula}{two-sided formula including random and fixed effects (see below or \code{\link{glmer}} for details)}
@@ -52,7 +53,7 @@ for further options to increase stability.
 }
 \examples{
 # generate data with a level-1 predictor 
-set.seed(123)
+set.seed(1234)
 d <- data.frame(group=factor(rep(LETTERS[1:20],each=50)), 
                 cov=rnorm(20*50))
 # generate dependent data based on logistic model (random intercept):

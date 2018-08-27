@@ -12,7 +12,7 @@
 
 <meta name="author" content="Daniel W. Heck" />
 
-<meta name="date" content="2018-07-26" />
+<meta name="date" content="2018-08-27" />
 
 <title>RRreg manual</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">RRreg manual</h1>
 <h4 class="author"><em>Daniel W. Heck</em></h4>
-<h4 class="date"><em>2018-07-26</em></h4>
+<h4 class="date"><em>2018-08-27</em></h4>
 
 
 
@@ -109,12 +109,12 @@ data.W &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="
                 <span class="dt">complyRates =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">sysBias =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>))
 <span class="kw">head</span>(data.W)</code></pre></div>
 <pre><code>##   true comply response
-## 1    0      1        0
+## 1    1      1        0
 ## 2    0      1        1
-## 3    1      1        0
+## 3    0      1        1
 ## 4    0      1        1
-## 5    0      1        0
-## 6    0      1        1</code></pre>
+## 5    0      1        1
+## 6    1      1        0</code></pre>
 <p>In the function <code>RRgen</code>, the argument <code>complyRates</code> gives the proportions of participants who do adhere to the RR instructions for carriers and non-carriers of the sensitive attribute, respectively. The argument <code>sysBias</code> gives the probability of <em>yes</em> responses in case of non-compliance for carriers and non-carriers, respectively. If <code>sysBias=c(0,0)</code>, noncomplying individuals always respond with self-protective <em>no</em> responses (also known as SP-‘no’ responses). In comparison, <code>sysBias=c(0,0.5)</code> indicates that noncomplying non-carriers answer <em>yes</em> or <em>no</em> by chance. However, since we generated data assuming perfect compliance, this argument can be neglected. These options can be used to test how robust the results are against non-adherence.</p>
 <p>Now that we have a data set, we can estimate the prevalence of cocaine users by means of <code>RRuni</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">warner &lt;-<span class="st"> </span><span class="kw">RRuni</span>(<span class="dt">response=</span>response, <span class="dt">data=</span>data.W, 
@@ -124,7 +124,7 @@ data.W &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="
 ## Sample size: 1000
 ## 
 ##    Estimate   StdErr      z  Pr(&gt;|z|)    
-## pi 0.268333 0.025326 10.595 &lt; 2.2e-16 ***
+## pi 0.273333 0.025371 10.773 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>The <code>response</code> variable containing 1 for <em>yes</em> and 0 for <em>no</em> responses can either be given as a vector or as a column name in the data set <code>data</code>. Moreover, the argument <code>model</code> specifies the RR design with its randomization probability given by <code>p</code> (see Sections 4 and 5 for details about other RR models) . If <code>MLest=FALSE</code> is used, the prevalence estimate is derived as an analytical least-squares estimator, which can assume values outside of the interval [0,1]. However, using <code>MLest=TRUE</code> (default), estimates of <code>pi</code> are restricted to the interval [0,1].</p>
@@ -154,11 +154,11 @@ data.W<span class="op">$</span>cov[data.W<span class="op">$</span>true<span clas
 ## 
 ## Estimated correlation matrix:
 ##                 data.W$response data.W$cov
-## data.W$response        1.000000   0.515638
-## data.W$cov             0.515638   1.000000</code></pre>
+## data.W$response        1.000000   0.417277
+## data.W$cov             0.417277   1.000000</code></pre>
 <p>The argument <code>models</code> defines which variables given by <code>x</code> and <code>y</code> are treated as RR variables. <code>x</code> and <code>y</code> can be vectors and/or data frames/matrices having one variable in each column (the order is then given as following: First, columns of <code>x</code> from left to right, and second, columns of <code>y</code> from left to right). The randomization probabilities <code>p.list</code> have to be in the same order as <code>models</code>. No values have to be specified for direct (nonRR) variables. To obtain bootstrapped standard errors, <code>bs.n</code> has to be set to a number of bootstrap replications larger than 0. Additionally, <code>bs.type</code> defines which kind of bootstrap should be performed (<code>&quot;se.n&quot;</code>, <code>&quot;se.p&quot;</code>: nonparametric/parametric for standard errors; <code>&quot;pval&quot;</code> parametric bootstrap assuming independence for p-values). For faster processing, <code>nCPU</code>can be increased to use parallel computation. In our example, we also know the true states of the participants in the data set and can check the results by:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(<span class="dt">x=</span>data.W<span class="op">$</span>true, <span class="dt">y=</span>data.W<span class="op">$</span>cov)</code></pre></div>
-<pre><code>## [1] 0.432875</code></pre>
+<pre><code>## [1] 0.4422088</code></pre>
 <ul>
 <li>Fox, J. A., &amp; Tracy, P. E. (1984). Measuring associations with randomized response. <em>Social Science Research, 13</em>, 188-197.</li>
 </ul>
@@ -179,12 +179,12 @@ data.W<span class="op">$</span>cov[data.W<span class="op">$</span>true<span clas
 ## Warner with p =  0.2
 ## 
 ## Model fit:
-##     n   logLik
-##  1000 -607.278
+##     n    logLik
+##  1000 -627.4488
 ## 
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
-## (Intercept) -1.98285  0.31884  38.67638        0.00000 129.422
-## cov          1.53960  0.26426  33.94298        0.00000  93.427
+## (Intercept) -1.43506  0.19773  52.67527        0.00000 105.571
+## cov          0.98186  0.16959  33.52072        0.00000  56.472
 ##             Pr(&gt;deltaG2)    
 ## (Intercept)    &lt; 2.2e-16 ***
 ## cov            &lt; 2.2e-16 ***
@@ -198,11 +198,11 @@ data.W<span class="op">$</span>cov[data.W<span class="op">$</span>true<span clas
 ## 
 ## Coefficients:
 ## (Intercept)          cov  
-##      -1.398        1.047  
+##      -1.321        1.063  
 ## 
 ## Degrees of Freedom: 999 Total (i.e. Null);  998 Residual
-## Null Deviance:       1206 
-## Residual Deviance: 999   AIC: 1003</code></pre>
+## Null Deviance:       1223 
+## Residual Deviance: 1009  AIC: 1013</code></pre>
 <ul>
 <li>van den Hout, A., van der Heijden, P. G., &amp; Gilchrist, R. (2007). The logistic regression model with response variables subject to randomized response. <em>Computational Statistics &amp; Data Analysis, 51</em>, 6060-6069.</li>
 </ul>
@@ -230,15 +230,15 @@ mixmod</code></pre></div>
 ##  Family: binomial  ( logRR(0.8,0.2) )
 ## Formula: response ~ cov + (1 | cluster)
 ##    Data: data.W
-##      AIC      BIC   logLik deviance df.resid 
-## 1220.556 1235.279 -607.278 1214.556      997 
+##       AIC       BIC    logLik  deviance  df.resid 
+## 1260.8976 1275.6208 -627.4488 1254.8976       997 
 ## Random effects:
-##  Groups  Name        Std.Dev.
-##  cluster (Intercept) 0       
+##  Groups  Name        Std.Dev. 
+##  cluster (Intercept) 1.988e-05
 ## Number of obs: 1000, groups:  cluster, 2
 ## Fixed Effects:
 ## (Intercept)          cov  
-##      -1.983        1.540</code></pre>
+##     -1.4350       0.9819</code></pre>
 <ul>
 <li>van den Hout, A., van der Heijden, P. G., &amp; Gilchrist, R. (2007). The Logistic Regression Model with Response Variables Subject to Randomized Response. <em>Computational Statistics &amp; Data Analysis</em>, 51, 6060–6069.</li>
 </ul>
@@ -261,12 +261,12 @@ mixmod</code></pre></div>
 ## 
 ## Coefficients (beta):
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept) -0.09144  0.04573     3.998        0.04555 *  
-## response     1.26080  0.11047   130.249        &lt; 2e-16 ***
+## (Intercept) -0.04649  0.04777    0.9471         0.3305    
+## response     1.06374  0.12761   69.4836         &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error (sigma): 0.972; N=1000</code></pre>
+## Residual standard error (sigma): 1.005; N=1000</code></pre>
 <p>As in <code>RRcor</code>, bootstrapped standard errors can be obtained by setting <code>bs.n</code> to the number of bootstrap replications. The order of the RR models is defined by <code>models</code> and <code>p.list</code>. For instance, given three RR variables <code>rr1</code>, <code>rr2</code>, and <code>rr3</code> and two non-RR/direct variables <code>x1</code> and <code>x2</code>, the model could be specified by <code>formula = y ~ rr1 + x1 + rr2 + rr3 + x2</code> and <code>models=c('Warner', 'direct', 'Warner', 'Warner', 'direct')</code>. Note that the predictors in <code>formula</code> can either be vectors or column names of variables in the data frame <code>data</code>.</p>
 <p>As a special case, if the number of predictors used in the formula interface is larger than the number of RR variables specified in <code>models</code>, the remaining predictors are treated as directly measured, non-RR variables:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data.W<span class="op">$</span>pred &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>)
@@ -283,13 +283,13 @@ lin2 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(<span class="dt
 ## 
 ## Coefficients (beta):
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept) -0.08860  0.04567    3.7631         0.0524 .  
-## response     1.25939  0.11066  129.5266         &lt;2e-16 ***
-## pred         0.04476  0.03227    1.9242         0.1654    
+## (Intercept) -0.04723  0.04778    0.9772         0.3229    
+## response     1.06522  0.12735   69.9691         &lt;2e-16 ***
+## pred        -0.01569  0.03519    0.1988         0.6557    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error (sigma): 0.971; N=1000</code></pre>
+## Residual standard error (sigma): 1.005; N=1000</code></pre>
 <p>To check the results of the simulation, run:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lm</span>(cov<span class="op">~</span>true <span class="op">+</span><span class="st"> </span>pred, <span class="dt">data=</span>data.W)</code></pre></div>
 <pre><code>## 
@@ -298,7 +298,7 @@ lin2 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(<span class="dt
 ## 
 ## Coefficients:
 ## (Intercept)         true         pred  
-##    -0.05741      1.06669      0.03655</code></pre>
+##    -0.08136      1.07331     -0.02349</code></pre>
 <p>It is also possible to include several RR variables as predictors if the randomization devices used are stochastically independent:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data.W2 &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dt">n=</span><span class="dv">1000</span>, <span class="dt">pi.true=</span>.<span class="dv">45</span>, <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p=</span>.<span class="dv">35</span>)
 data.W<span class="op">$</span>cov &lt;-<span class="dv">2</span><span class="op">*</span>data.W<span class="op">$</span>true <span class="op">-</span><span class="st"> </span><span class="dv">3</span><span class="op">*</span>data.W2<span class="op">$</span>true<span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>,<span class="dv">1</span>,<span class="dv">5</span>)
@@ -317,14 +317,14 @@ lin3 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(cov <span class
 ## 2 response2 Warner 0.35
 ## 
 ## Coefficients (beta):
-##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)  
-## (Intercept)  1.11679  0.65561    2.9017        0.08849 .
-## response     1.16688  0.84873    1.8902        0.16918  
-## response2   -2.40761  1.11624    4.6522        0.03101 *
+##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
+## (Intercept)  0.45424  0.54330    0.6990        0.40311    
+## response     3.53639  0.85840   16.9721          4e-05 ***
+## response2   -2.57172  1.02428    6.3039        0.01205 *  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error (sigma): 5.067; N=1000</code></pre>
+## Residual standard error (sigma): 4.933; N=1000</code></pre>
 <p>Besides the regression output, the function <code>summary</code> also provides ‘Prevalence estimates for combinations of RR responses’. In our example using two Warner variables, the combination 0:0 indicates the sub-group having neither of both sensitive attributes and shows the corresponding prevalence estimate. Similarly, the combination 0:1 indicates the sub-group having only the second sensitive attribute and so on. Note that the last combination 1:1 is not provided and can be calculated by summing up all other prevalence estimates and substracting this sum from 1.</p>
 <p>To include many RR variables as predictors, very large sample sizes are required for reliable estimation. In such a case, it might be necessary to adjust the optimization parameters <code>maxit</code> (maximum number of iterations) and <code>pibeta</code> (relative ratio of proability scale for <code>pi</code> to regression coefficients <code>beta</code>; e.g., choose a smaller value for larger absolute beta values).</p>
 <ul>
@@ -368,28 +368,28 @@ fit &lt;-<span class="st"> </span><span class="kw">RRlog</span>(response <span c
 ## 
 ## Model fit:
 ##     n    logLik
-##  1000 -659.4791
+##  1000 -659.7975
 ## 
 ##                 Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
-## (Intercept)     -0.22391  0.08511   6.92066        0.00852  6.7514
-## RR.design        0.43017  0.08511  25.54457        0.00000 25.6096
-## z.age            0.26886  0.08629   9.70842        0.00183 10.4086
-## RR.design:z.age  0.23466  0.08629   7.39556        0.00654  7.8511
+## (Intercept)     -0.27219  0.08546  10.14370        0.00145  9.8249
+## RR.design        0.36494  0.08546  18.23389        0.00002 18.2206
+## z.age            0.19053  0.09405   4.10387        0.04279  4.4667
+## RR.design:z.age  0.38221  0.09405  16.51458        0.00005 19.1587
 ##                 Pr(&gt;deltaG2)    
-## (Intercept)          0.00937 ** 
-## RR.design            &lt; 2e-16 ***
-## z.age                0.00125 ** 
-## RR.design:z.age      0.00508 ** 
+## (Intercept)          0.00172 ** 
+## RR.design              2e-05 ***
+## z.age                0.03456 *  
+## RR.design:z.age        1e-05 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get prevalence estimate for RR and DQ </span>
 <span class="co"># (for z.age = 0 = mean(z.age))</span>
 logit1 &lt;-<span class="st"> </span><span class="kw">coef</span>(fit) <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span><span class="op">*</span><span class="dv">0</span>)
 <span class="kw">cat</span>(<span class="kw">exp</span>(logit1) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span><span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(logit1)))</code></pre></div>
-<pre><code>## 0.5513847</code></pre>
+<pre><code>## 0.5231695</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2 &lt;-<span class="st"> </span><span class="kw">coef</span>(fit) <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span><span class="op">*</span><span class="dv">0</span>)
 <span class="kw">cat</span>(<span class="kw">exp</span>(logit2) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span><span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(logit2)))</code></pre></div>
-<pre><code>## 0.3420702</code></pre>
+<pre><code>## 0.3458958</code></pre>
 <p> </p>
 </div>
 <div id="specification-of-rr-models-using-one-group" class="section level1">
@@ -606,16 +606,16 @@ logmod &lt;-<span class="st"> </span><span class="kw">RRlog</span>(RR1<span clas
 ## 
 ## Model fit:
 ##     n    logLik
-##  1000 -595.2551
+##  1000 -603.3956
 ## 
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2
-## (Intercept) -0.28887  0.20676   1.95204        0.16237  1.9689
-## cov          0.03437  0.05150   0.44538        0.50454  0.4452
-## t            0.80366  0.04137  22.51968        0.00000 13.7175
+## (Intercept) -0.54702  0.23457   5.43844        0.01970  6.0156
+## cov          0.07326  0.05974   1.50402        0.22005  1.6046
+## t            0.75506  0.04506  29.55400        0.00000 15.5006
 ##             Pr(&gt;deltaG2)    
-## (Intercept)      0.16056    
-## cov              0.50461    
-## t                0.00021 ***
+## (Intercept)      0.01418 *  
+## cov              0.20526    
+## t                  8e-05 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -640,9 +640,9 @@ responses &lt;-<span class="st"> </span><span class="kw">cbind</span>(RR1<span c
 ## 
 ## Estimated correlation matrix:
 ##          RR1      RR2      cov
-## RR1 1.000000       NA 0.049309
-## RR2       NA 1.000000 0.192605
-## cov 0.049309 0.192605 1.000000</code></pre>
+## RR1 1.000000       NA 0.098144
+## RR2       NA 1.000000 0.108137
+## cov 0.098144 0.108137 1.000000</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># linear model with 2 RR predictors</span>
 linmod &lt;-<span class="st"> </span><span class="kw">RRlin</span>(cov <span class="op">~</span><span class="st"> </span>RR1<span class="op">$</span>response<span class="op">+</span>RR2<span class="op">$</span>response, <span class="dt">models=</span><span class="kw">c</span>(<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;SLD&quot;</span>), 
                 <span class="dt">p.list=</span><span class="kw">list</span>(<span class="kw">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="kw">c</span>(.<span class="dv">3</span>, .<span class="dv">7</span>)), <span class="dt">group=</span>group, <span class="dt">fit.n=</span><span class="dv">1</span>)
@@ -658,14 +658,14 @@ linmod &lt;-<span class="st"> </span><span class="kw">RRlin</span>(cov <span cla
 ## 2 RR2$response SLD   c(0.3, 0.7)
 ## 
 ## Coefficients (beta):
-##              Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)   0.26596 0.30180    0.7766        0.37817    
-## RR1$response  0.43140 0.47435    0.8271        0.36311    
-## RR2$response  1.21407 0.31581   14.7785        0.00012 ***
+##              Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)  
+## (Intercept)   0.55260 0.30406    3.3030        0.06915 .
+## RR1$response  0.69114 0.53788    1.6510        0.19882  
+## RR2$response  0.68965 0.34594    3.9743        0.04620 *
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error (sigma): 2.946; N=1000</code></pre>
+## Residual standard error (sigma): 3.063; N=1000</code></pre>
 </div>
 </div>
 
