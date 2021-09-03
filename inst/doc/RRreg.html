@@ -8,38 +8,57 @@
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="Daniel W. Heck" />
 
-<meta name="date" content="2019-12-04" />
+<meta name="date" content="2021-09-02" />
 
 <title>RRreg manual</title>
 
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -48,9 +67,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -107,189 +126,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
-<style type="text/css">body {
-background-color: #fff;
-margin: 1em auto;
-max-width: 700px;
-overflow: visible;
-padding-left: 2em;
-padding-right: 2em;
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 14px;
-line-height: 1.35;
-}
-#header {
-text-align: center;
-}
-#TOC {
-clear: both;
-margin: 0 0 10px 10px;
-padding: 4px;
-width: 400px;
-border: 1px solid #CCCCCC;
-border-radius: 5px;
-background-color: #f6f6f6;
-font-size: 13px;
-line-height: 1.3;
-}
-#TOC .toctitle {
-font-weight: bold;
-font-size: 15px;
-margin-left: 5px;
-}
-#TOC ul {
-padding-left: 40px;
-margin-left: -1.5em;
-margin-top: 5px;
-margin-bottom: 5px;
-}
-#TOC ul ul {
-margin-left: -2em;
-}
-#TOC li {
-line-height: 16px;
-}
-table {
-margin: 1em auto;
-border-width: 1px;
-border-color: #DDDDDD;
-border-style: outset;
-border-collapse: collapse;
-}
-table th {
-border-width: 2px;
-padding: 5px;
-border-style: inset;
-}
-table td {
-border-width: 1px;
-border-style: inset;
-line-height: 18px;
-padding: 5px 5px;
-}
-table, table th, table td {
-border-left-style: none;
-border-right-style: none;
-}
-table thead, table tr.even {
-background-color: #f7f7f7;
-}
-p {
-margin: 0.5em 0;
-}
-blockquote {
-background-color: #f6f6f6;
-padding: 0.25em 0.75em;
-}
-hr {
-border-style: solid;
-border: none;
-border-top: 1px solid #777;
-margin: 28px 0;
-}
-dl {
-margin-left: 0;
-}
-dl dd {
-margin-bottom: 13px;
-margin-left: 13px;
-}
-dl dt {
-font-weight: bold;
-}
-ul {
-margin-top: 0;
-}
-ul li {
-list-style: circle outside;
-}
-ul ul {
-margin-bottom: 0;
-}
-pre, code {
-background-color: #f7f7f7;
-border-radius: 3px;
-color: #333;
-white-space: pre-wrap; 
-}
-pre {
-border-radius: 3px;
-margin: 5px 0px 10px 0px;
-padding: 10px;
-}
-pre:not([class]) {
-background-color: #f7f7f7;
-}
-code {
-font-family: Consolas, Monaco, 'Courier New', monospace;
-font-size: 85%;
-}
-p > code, li > code {
-padding: 2px 0px;
-}
-div.figure {
-text-align: center;
-}
-img {
-background-color: #FFFFFF;
-padding: 2px;
-border: 1px solid #DDDDDD;
-border-radius: 3px;
-border: 1px solid #CCCCCC;
-margin: 0 5px;
-}
-h1 {
-margin-top: 0;
-font-size: 35px;
-line-height: 40px;
-}
-h2 {
-border-bottom: 4px solid #f7f7f7;
-padding-top: 10px;
-padding-bottom: 2px;
-font-size: 145%;
-}
-h3 {
-border-bottom: 2px solid #f7f7f7;
-padding-top: 10px;
-font-size: 120%;
-}
-h4 {
-border-bottom: 1px solid #f7f7f7;
-margin-left: 8px;
-font-size: 105%;
-}
-h5, h6 {
-border-bottom: 1px solid #ccc;
-font-size: 105%;
-}
-a {
-color: #0033dd;
-text-decoration: none;
-}
-a:hover {
-color: #6666ff; }
-a:visited {
-color: #800080; }
-a:visited:hover {
-color: #BB00BB; }
-a[href^="http:"] {
-text-decoration: underline; }
-a[href^="https:"] {
-text-decoration: underline; }
 
-code > span.kw { color: #555; font-weight: bold; } 
-code > span.dt { color: #902000; } 
-code > span.dv { color: #40a070; } 
-code > span.bn { color: #d14; } 
-code > span.fl { color: #d14; } 
-code > span.ch { color: #d14; } 
-code > span.st { color: #d14; } 
-code > span.co { color: #888888; font-style: italic; } 
-code > span.ot { color: #007020; } 
-code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
-</style>
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
 
 
 
@@ -303,7 +141,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">RRreg manual</h1>
 <h4 class="author">Daniel W. Heck</h4>
-<h4 class="date">2019-12-04</h4>
+<h4 class="date">2021-09-02</h4>
 
 
 
@@ -337,27 +175,27 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>The original RR design proposed by Warner in 1965 works as follows: With randomization probability <code>p</code>, participants are supposed to answer to the question ‘Have you ever used cocaine?’, and with counter-probability <code>1-p</code>, the question is reversed, i.e., ‘Have you never used cocaine?’. As a randomization device, dices or coin flips with known probabilities may be used. The model is depicted in the following figure:</p>
 <p><img src="data:image/jpeg;base64,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" alt="title" /></p>
 <p><a id="RRgen"></a> First, let’s load the package and generate a single data frame using the function <code>RRgen</code>. We simulate data for 1000 participants, a proportion of 30% cocaine users (<code>pi.true=.3</code>; obviously, this rate is unrealistic, but it should suffice for the sake of example), and a randomization probability of <code>p=.2</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(RRreg)</a>
-<a class="sourceLine" id="cb1-2" title="2">data.W &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dt">n=</span><span class="dv">1000</span>, <span class="dt">pi.true=</span>.<span class="dv">3</span>, <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p=</span>.<span class="dv">2</span>, </a>
-<a class="sourceLine" id="cb1-3" title="3">                <span class="dt">complyRates =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">sysBias =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>))</a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="kw">head</span>(data.W)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RRreg)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data.W <span class="ot">&lt;-</span> <span class="fu">RRgen</span>(<span class="at">n=</span><span class="dv">1000</span>, <span class="at">pi.true=</span>.<span class="dv">3</span>, <span class="at">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p=</span>.<span class="dv">2</span>, </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">complyRates =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">sysBias =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data.W)</span></code></pre></div>
 <pre><code>##   true comply response
-## 1    0      1        1
-## 2    0      1        0
-## 3    1      1        0
+## 1    0      1        0
+## 2    0      1        1
+## 3    0      1        1
 ## 4    0      1        1
-## 5    1      1        0
-## 6    1      1        1</code></pre>
+## 5    1      1        1
+## 6    0      1        0</code></pre>
 <p>In the function <code>RRgen</code>, the argument <code>complyRates</code> gives the proportions of participants who do adhere to the RR instructions for carriers and non-carriers of the sensitive attribute, respectively. The argument <code>sysBias</code> gives the probability of <em>yes</em> responses in case of non-compliance for carriers and non-carriers, respectively. If <code>sysBias=c(0,0)</code>, noncomplying individuals always respond with self-protective <em>no</em> responses (also known as SP-‘no’ responses). In comparison, <code>sysBias=c(0,0.5)</code> indicates that noncomplying non-carriers answer <em>yes</em> or <em>no</em> by chance. However, since we generated data assuming perfect compliance, this argument can be neglected. These options can be used to test how robust the results are against non-adherence.</p>
 <p>Now that we have a data set, we can estimate the prevalence of cocaine users by means of <code>RRuni</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">warner &lt;-<span class="st"> </span><span class="kw">RRuni</span>(<span class="dt">response=</span>response, <span class="dt">data=</span>data.W, </a>
-<a class="sourceLine" id="cb3-2" title="2">                <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p=</span>.<span class="dv">2</span>, <span class="dt">MLest=</span>T)</a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="kw">summary</span>(warner)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>warner <span class="ot">&lt;-</span> <span class="fu">RRuni</span>(<span class="at">response=</span>response, <span class="at">data=</span>data.W, </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p=</span>.<span class="dv">2</span>, <span class="at">MLest=</span>T)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(warner)</span></code></pre></div>
 <pre><code>## Warner Model with p = 0.2
 ## Sample size: 1000
 ## 
 ##    Estimate   StdErr      z  Pr(&gt;|z|)    
-## pi 0.313333 0.025696 12.194 &lt; 2.2e-16 ***
+## pi 0.268333 0.025326 10.595 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p>The <code>response</code> variable containing 1 for <em>yes</em> and 0 for <em>no</em> responses can either be given as a vector or as a column name in the data set <code>data</code>. Moreover, the argument <code>model</code> specifies the RR design with its randomization probability given by <code>p</code> (see Sections 4 and 5 for details about other RR models) . If <code>MLest=FALSE</code> is used, the prevalence estimate is derived as an analytical least-squares estimator, which can assume values outside of the interval [0,1]. However, using <code>MLest=TRUE</code> (default), estimates of <code>pi</code> are restricted to the interval [0,1].</p>
@@ -369,15 +207,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="multivariate-analysis" class="section level3">
 <h3>Multivariate Analysis</h3>
 <p>First, we generate a continuous, non-RR variable. According to our simulation, respondents carrying the sensitive attribute (i.e., cocaine users) have higher scores on this covariate:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">data.W<span class="op">$</span>cov[data.W<span class="op">$</span>true<span class="op">==</span><span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">sum</span>(data.W<span class="op">$</span>true <span class="op">==</span><span class="st"> </span><span class="dv">1</span>),<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb5-2" title="2">data.W<span class="op">$</span>cov[data.W<span class="op">$</span>true<span class="op">==</span><span class="dv">0</span>] &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">sum</span>(data.W<span class="op">$</span>true <span class="op">==</span><span class="st"> </span><span class="dv">0</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>cov[data.W<span class="sc">$</span>true<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">sum</span>(data.W<span class="sc">$</span>true <span class="sc">==</span> <span class="dv">1</span>),<span class="dv">1</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>cov[data.W<span class="sc">$</span>true<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">sum</span>(data.W<span class="sc">$</span>true <span class="sc">==</span> <span class="dv">0</span>))</span></code></pre></div>
 <p><a id="RRcor"></a></p>
 <p> </p>
 <div id="rrcor-rr-correlations" class="section level4">
 <h4>RRcor: RR correlations</h4>
 <p>Now, we can estimate the bivariate (point-biserial) correlation between the dichotomous Warner RR variable and the continuous covariate:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">RRcor</span>(<span class="dt">x=</span>data.W<span class="op">$</span>response, <span class="dt">y=</span>data.W<span class="op">$</span>cov, <span class="dt">models=</span><span class="kw">c</span>(<span class="st">&quot;Warner&quot;</span>, <span class="st">&quot;direct&quot;</span>), </a>
-<a class="sourceLine" id="cb6-2" title="2">      <span class="dt">p.list=</span><span class="kw">list</span>(.<span class="dv">2</span>), <span class="dt">bs.n=</span><span class="dv">0</span>, <span class="dt">bs.type =</span> <span class="kw">c</span>(<span class="st">&quot;se.n&quot;</span>, <span class="st">&quot;se.p&quot;</span>, <span class="st">&quot;pval&quot;</span>), <span class="dt">nCPU=</span><span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">RRcor</span>(<span class="at">x=</span>data.W<span class="sc">$</span>response, <span class="at">y=</span>data.W<span class="sc">$</span>cov, <span class="at">models=</span><span class="fu">c</span>(<span class="st">&quot;Warner&quot;</span>, <span class="st">&quot;direct&quot;</span>), </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">p.list=</span><span class="fu">list</span>(.<span class="dv">2</span>), <span class="at">bs.n=</span><span class="dv">0</span>, <span class="at">bs.type =</span> <span class="fu">c</span>(<span class="st">&quot;se.n&quot;</span>, <span class="st">&quot;se.p&quot;</span>, <span class="st">&quot;pval&quot;</span>), <span class="at">nCPU=</span><span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## Randomized response variables:
 ##   Variable        RRmodel p   
 ## 1 data.W$response Warner   0.2
@@ -387,11 +225,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Estimated correlation matrix:
 ##                 data.W$response data.W$cov
-## data.W$response        1.000000   0.446458
-## data.W$cov             0.446458   1.000000</code></pre>
+## data.W$response        1.000000   0.416216
+## data.W$cov             0.416216   1.000000</code></pre>
 <p>The argument <code>models</code> defines which variables given by <code>x</code> and <code>y</code> are treated as RR variables. <code>x</code> and <code>y</code> can be vectors and/or data frames/matrices having one variable in each column (the order is then given as following: First, columns of <code>x</code> from left to right, and second, columns of <code>y</code> from left to right). The randomization probabilities <code>p.list</code> have to be in the same order as <code>models</code>. No values have to be specified for direct (nonRR) variables. To obtain bootstrapped standard errors, <code>bs.n</code> has to be set to a number of bootstrap replications larger than 0. Additionally, <code>bs.type</code> defines which kind of bootstrap should be performed (<code>&quot;se.n&quot;</code>, <code>&quot;se.p&quot;</code>: nonparametric/parametric for standard errors; <code>&quot;pval&quot;</code> parametric bootstrap assuming independence for p-values). For faster processing, <code>nCPU</code>can be increased to use parallel computation. In our example, we also know the true states of the participants in the data set and can check the results by:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">cor</span>(<span class="dt">x=</span>data.W<span class="op">$</span>true, <span class="dt">y=</span>data.W<span class="op">$</span>cov)</a></code></pre></div>
-<pre><code>## [1] 0.4314089</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(<span class="at">x=</span>data.W<span class="sc">$</span>true, <span class="at">y=</span>data.W<span class="sc">$</span>cov)</span></code></pre></div>
+<pre><code>## [1] 0.4167635</code></pre>
 <ul>
 <li>Fox, J. A., &amp; Tracy, P. E. (1984). Measuring associations with randomized response. <em>Social Science Research, 13</em>, 188-197.</li>
 </ul>
@@ -401,9 +239,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="rrlog-logistic-rr-regression" class="section level4">
 <h4>RRlog: Logistic RR Regression</h4>
 <p>Alternatively, we can run a logistic regression to predict the probability of cocaine use. In the <code>formula</code> below, the Warner RR variable is defined as criterion on the left side, whereas the continuous covariate is used as predictor on the right. The interface is similar to that of the standard linear regression in R (i.e., <code>lm()</code>).</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">log1 &lt;-<span class="st"> </span><span class="kw">RRlog</span>(<span class="dt">formula=</span>response<span class="op">~</span>cov, <span class="dt">data=</span>data.W, </a>
-<a class="sourceLine" id="cb10-2" title="2">              <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p=</span>.<span class="dv">2</span>, <span class="dt">LR.test=</span><span class="ot">TRUE</span>, <span class="dt">fit.n =</span> <span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb10-3" title="3"><span class="kw">summary</span>(log1)</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="ot">&lt;-</span> <span class="fu">RRlog</span>(<span class="at">formula=</span>response<span class="sc">~</span>cov, <span class="at">data=</span>data.W, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p=</span>.<span class="dv">2</span>, <span class="at">LR.test=</span><span class="cn">TRUE</span>, <span class="at">fit.n =</span> <span class="dv">1</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(log1)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlog.formula(formula = response ~ cov, data = data.W, model = &quot;Warner&quot;, 
 ##     p = 0.2, LR.test = TRUE, fit.n = 1)
@@ -413,26 +251,26 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Model fit:
 ##     n    logLik
-##  1000 -634.4617
+##  1000 -625.7062
 ## 
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2 Pr(&gt;deltaG2)    
-## (Intercept) -1.33795  0.19275  48.18069        0.00000  89.905    &lt; 2.2e-16 ***
-## cov          1.02925  0.16869  37.22669        0.00000  66.767    &lt; 2.2e-16 ***
+## (Intercept) -1.50593  0.21409  49.47638        0.00000  110.27    &lt; 2.2e-16 ***
+## cov          1.04870  0.18593  31.81188        0.00000   56.57    &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p>To remove the intercept from the model, use <code>formula=response~cov - 1</code>. The argument <code>LR.test</code> determines whether the coefficients should be tested by means of a likelihood ratio test, that is, by removing one predictor at a time. Again, we can check the results by:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">glm</span>(<span class="dt">formula=</span>true<span class="op">~</span>cov, <span class="dt">data=</span>data.W, <span class="dt">family=</span><span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glm</span>(<span class="at">formula=</span>true<span class="sc">~</span>cov, <span class="at">data=</span>data.W, <span class="at">family=</span><span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">&quot;logit&quot;</span>))</span></code></pre></div>
 <pre><code>## 
 ## Call:  glm(formula = true ~ cov, family = binomial(link = &quot;logit&quot;), 
 ##     data = data.W)
 ## 
 ## Coefficients:
 ## (Intercept)          cov  
-##      -1.414        1.018  
+##      -1.440        1.037  
 ## 
 ## Degrees of Freedom: 999 Total (i.e. Null);  998 Residual
-## Null Deviance:       1227 
-## Residual Deviance: 1025  AIC: 1029</code></pre>
+## Null Deviance:       1180 
+## Residual Deviance: 990.4     AIC: 994.4</code></pre>
 <ul>
 <li>van den Hout, A., van der Heijden, P. G., &amp; Gilchrist, R. (2007). The logistic regression model with response variables subject to randomized response. <em>Computational Statistics &amp; Data Analysis, 51</em>, 6060-6069.</li>
 </ul>
@@ -450,27 +288,27 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <li>level-2 predictors: <code>rrt ~ covariate + lev2pred + (1 | cluster)</code> (the predictor lev2pred must have constant values within clusters)</li>
 </ul>
 <p>The function <code>RRmixed</code> is used as follows:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="co"># make random cluster:</span></a>
-<a class="sourceLine" id="cb14-2" title="2">data.W<span class="op">$</span>cluster &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>)</a>
-<a class="sourceLine" id="cb14-3" title="3">mixmod &lt;-<span class="st"> </span><span class="kw">RRmixed</span>(response <span class="op">~</span><span class="st"> </span>cov <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>cluster), </a>
-<a class="sourceLine" id="cb14-4" title="4">                  <span class="dt">data=</span>data.W, <span class="dt">model =</span> <span class="st">&quot;Warner&quot;</span>, <span class="dt">p =</span> <span class="fl">.2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make random cluster:</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>cluster <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>mixmod <span class="ot">&lt;-</span> <span class="fu">RRmixed</span>(response <span class="sc">~</span> cov <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> cluster), </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data=</span>data.W, <span class="at">model =</span> <span class="st">&quot;Warner&quot;</span>, <span class="at">p =</span> .<span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## boundary (singular) fit: see ?isSingular</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">mixmod</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mixmod</span></code></pre></div>
 <pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
 ##   Approximation) [glmerMod]
 ##  Family: binomial  ( logRR(0.8,0.2) )
 ## Formula: response ~ cov + (1 | cluster)
 ##    Data: data.W
 ##       AIC       BIC    logLik  deviance  df.resid 
-## 1274.9234 1289.6467 -634.4617 1268.9234       997 
+## 1257.4123 1272.1356 -625.7062 1251.4123       997 
 ## Random effects:
 ##  Groups  Name        Std.Dev.
 ##  cluster (Intercept) 0       
 ## Number of obs: 1000, groups:  cluster, 2
 ## Fixed Effects:
 ## (Intercept)          cov  
-##      -1.338        1.029  
-## convergence code 0; 1 optimizer warnings; 0 lme4 warnings</code></pre>
+##      -1.506        1.049  
+## optimizer (Nelder_Mead) convergence code: 0 (OK) ; 0 optimizer warnings; 1 lme4 warnings</code></pre>
 <ul>
 <li>van den Hout, A., van der Heijden, P. G., &amp; Gilchrist, R. (2007). The Logistic Regression Model with Response Variables Subject to Randomized Response. <em>Computational Statistics &amp; Data Analysis</em>, 51, 6060–6069.</li>
 </ul>
@@ -480,9 +318,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="rrlin-rr-predictors-in-a-linear-regression" class="section level4">
 <h4>RRlin: RR Predictors in a Linear Regression</h4>
 <p>Third, we can use the Warner RR variable as predictor in a linear regression:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">lin1 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(<span class="dt">formula=</span>cov<span class="op">~</span>response, <span class="dt">data=</span>data.W, </a>
-<a class="sourceLine" id="cb18-2" title="2">              <span class="dt">models=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p.list=</span>.<span class="dv">2</span>, <span class="dt">bs.n=</span><span class="dv">0</span>, <span class="dt">fit.n=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb18-3" title="3"><span class="kw">summary</span>(lin1)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>lin1 <span class="ot">&lt;-</span> <span class="fu">RRlin</span>(<span class="at">formula=</span>cov<span class="sc">~</span>response, <span class="at">data=</span>data.W, </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">models=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p.list=</span>.<span class="dv">2</span>, <span class="at">bs.n=</span><span class="dv">0</span>, <span class="at">fit.n=</span><span class="dv">1</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lin1)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlin(formula = cov ~ response, data = data.W, models = &quot;Warner&quot;, 
 ##     p.list = 0.2, bs.n = 0, fit.n = 1)
@@ -492,19 +330,19 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 1 response Warner 0.2
 ## 
 ## Coefficients (beta):
-##             Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)  0.02935 0.04995    0.3453         0.5568    
-## response     1.09541 0.12017   83.0937         &lt;2e-16 ***
+##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
+## (Intercept) -0.03420  0.04611    0.5502         0.4582    
+## response     1.02334  0.12585   66.1188         &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 0.984; N=1000</code></pre>
+## Residual standard error (sigma): 0.988; N=1000</code></pre>
 <p>As in <code>RRcor</code>, bootstrapped standard errors can be obtained by setting <code>bs.n</code> to the number of bootstrap replications. The order of the RR models is defined by <code>models</code> and <code>p.list</code>. For instance, given three RR variables <code>rr1</code>, <code>rr2</code>, and <code>rr3</code> and two non-RR/direct variables <code>x1</code> and <code>x2</code>, the model could be specified by <code>formula = y ~ rr1 + x1 + rr2 + rr3 + x2</code> and <code>models=c(&#39;Warner&#39;, &#39;direct&#39;, &#39;Warner&#39;, &#39;Warner&#39;, &#39;direct&#39;)</code>. Note that the predictors in <code>formula</code> can either be vectors or column names of variables in the data frame <code>data</code>.</p>
 <p>As a special case, if the number of predictors used in the formula interface is larger than the number of RR variables specified in <code>models</code>, the remaining predictors are treated as directly measured, non-RR variables:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">data.W<span class="op">$</span>pred &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>)</a>
-<a class="sourceLine" id="cb20-2" title="2">lin2 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(<span class="dt">formula=</span>cov<span class="op">~</span>response <span class="op">+</span><span class="st"> </span>pred, <span class="dt">data=</span>data.W, </a>
-<a class="sourceLine" id="cb20-3" title="3">              <span class="dt">models=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p.list=</span><span class="kw">list</span>(.<span class="dv">2</span>), <span class="dt">bs.n=</span><span class="dv">0</span>, <span class="dt">fit.n=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb20-4" title="4"><span class="kw">summary</span>(lin2)</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>pred <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>lin2 <span class="ot">&lt;-</span> <span class="fu">RRlin</span>(<span class="at">formula=</span>cov<span class="sc">~</span>response <span class="sc">+</span> pred, <span class="at">data=</span>data.W, </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">models=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p.list=</span><span class="fu">list</span>(.<span class="dv">2</span>), <span class="at">bs.n=</span><span class="dv">0</span>, <span class="at">fit.n=</span><span class="dv">1</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lin2)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlin(formula = cov ~ response + pred, data = data.W, models = &quot;Warner&quot;, 
 ##     p.list = list(0.2), bs.n = 0, fit.n = 1)
@@ -515,30 +353,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Coefficients (beta):
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)  0.03064  0.05006    0.3746         0.5405    
-## response     1.08885  0.11993   82.4238         &lt;2e-16 ***
-## pred        -0.04033  0.03362    1.4388         0.2303    
+## (Intercept) -0.03434  0.04610    0.5547         0.4564    
+## response     1.02300  0.12578   66.1491         &lt;2e-16 ***
+## pred        -0.01104  0.03293    0.1124         0.7374    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 0.984; N=1000</code></pre>
+## Residual standard error (sigma): 0.988; N=1000</code></pre>
 <p>To check the results of the simulation, run:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">lm</span>(cov<span class="op">~</span>true <span class="op">+</span><span class="st"> </span>pred, <span class="dt">data=</span>data.W)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm</span>(cov<span class="sc">~</span>true <span class="sc">+</span> pred, <span class="at">data=</span>data.W)</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## lm(formula = cov ~ true + pred, data = data.W)
 ## 
 ## Coefficients:
 ## (Intercept)         true         pred  
-##     0.05694      1.04283     -0.05929</code></pre>
+##   -0.041161     1.012624     0.006078</code></pre>
 <p>It is also possible to include several RR variables as predictors if the randomization devices used are stochastically independent:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">data.W2 &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dt">n=</span><span class="dv">1000</span>, <span class="dt">pi.true=</span>.<span class="dv">45</span>, <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="dt">p=</span>.<span class="dv">35</span>)</a>
-<a class="sourceLine" id="cb24-2" title="2">data.W<span class="op">$</span>cov &lt;-<span class="dv">2</span><span class="op">*</span>data.W<span class="op">$</span>true <span class="op">-</span><span class="st"> </span><span class="dv">3</span><span class="op">*</span>data.W2<span class="op">$</span>true<span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>,<span class="dv">1</span>,<span class="dv">5</span>)</a>
-<a class="sourceLine" id="cb24-3" title="3">data.W<span class="op">$</span>response2 &lt;-<span class="st"> </span>data.W2<span class="op">$</span>response</a>
-<a class="sourceLine" id="cb24-4" title="4">lin3 &lt;-<span class="st"> </span><span class="kw">RRlin</span>(cov <span class="op">~</span><span class="st"> </span>response <span class="op">+</span><span class="st"> </span>response2, <span class="dt">data=</span>data.W, </a>
-<a class="sourceLine" id="cb24-5" title="5">              <span class="dt">models=</span><span class="kw">c</span>(<span class="st">&quot;Warner&quot;</span>, <span class="st">&quot;Warner&quot;</span>), </a>
-<a class="sourceLine" id="cb24-6" title="6">              <span class="dt">p.list=</span><span class="kw">list</span>(.<span class="dv">2</span>, <span class="fl">.35</span>), <span class="dt">fit.n=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb24-7" title="7"><span class="kw">summary</span>(lin3)</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>data.W2 <span class="ot">&lt;-</span> <span class="fu">RRgen</span>(<span class="at">n=</span><span class="dv">1000</span>, <span class="at">pi.true=</span>.<span class="dv">45</span>, <span class="at">model=</span><span class="st">&quot;Warner&quot;</span>, <span class="at">p=</span>.<span class="dv">35</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>cov <span class="ot">&lt;-</span><span class="dv">2</span><span class="sc">*</span>data.W<span class="sc">$</span>true <span class="sc">-</span> <span class="dv">3</span><span class="sc">*</span>data.W2<span class="sc">$</span>true<span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>,<span class="dv">1</span>,<span class="dv">5</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>data.W<span class="sc">$</span>response2 <span class="ot">&lt;-</span> data.W2<span class="sc">$</span>response</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>lin3 <span class="ot">&lt;-</span> <span class="fu">RRlin</span>(cov <span class="sc">~</span> response <span class="sc">+</span> response2, <span class="at">data=</span>data.W, </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">models=</span><span class="fu">c</span>(<span class="st">&quot;Warner&quot;</span>, <span class="st">&quot;Warner&quot;</span>), </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">p.list=</span><span class="fu">list</span>(.<span class="dv">2</span>, .<span class="dv">35</span>), <span class="at">fit.n=</span><span class="dv">1</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lin3)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlin(formula = cov ~ response + response2, data = data.W, models = c(&quot;Warner&quot;, 
 ##     &quot;Warner&quot;), p.list = list(0.2, 0.35), fit.n = 1)
@@ -549,14 +387,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 2 response2 Warner 0.35
 ## 
 ## Coefficients (beta):
-##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)    
-## (Intercept)  1.58350  0.62288    6.4629        0.01101 *  
-## response     2.08809  0.99892    4.3696        0.03659 *  
-## response2   -3.79577  1.08389   12.2639        0.00046 ***
+##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1)   
+## (Intercept)  0.79347  0.55403    2.0511        0.15209   
+## response     2.62414  0.92156    8.1082        0.00441 **
+## response2   -3.26164  1.19132    7.4957        0.00618 **
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 5.184; N=1000</code></pre>
+## Residual standard error (sigma): 4.904; N=1000</code></pre>
 <p>Besides the regression output, the function <code>summary</code> also provides ‘Prevalence estimates for combinations of RR responses’. In our example using two Warner variables, the combination 0:0 indicates the sub-group having neither of both sensitive attributes and shows the corresponding prevalence estimate. Similarly, the combination 0:1 indicates the sub-group having only the second sensitive attribute and so on. Note that the last combination 1:1 is not provided and can be calculated by summing up all other prevalence estimates and substracting this sum from 1.</p>
 <p>To include many RR variables as predictors, very large sample sizes are required for reliable estimation. In such a case, it might be necessary to adjust the optimization parameters <code>maxit</code> (maximum number of iterations) and <code>pibeta</code> (relative ratio of proability scale for <code>pi</code> to regression coefficients <code>beta</code>; e.g., choose a smaller value for larger absolute beta values).</p>
 <ul>
@@ -572,25 +410,25 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>If the regression coefficient of the effect-coded predictor is significant, this indicates different prevalence rates between RR and DQ.</p>
 <p>Furthermore, interactions between question format (RR vs. DQ) and other predictors can be tested. For instance, one might want to know whether the regression coefficient of a predictor (e.g., age) differs between question formats (e.g., whether the RR format serves as a more valid criterion). Interactions are included by <code>formula= RR ~ format + age + format:age</code>.</p>
 <p>An example is:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="co"># generate data with different prevalence rates for RR and DQ</span></a>
-<a class="sourceLine" id="cb26-2" title="2">RR &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dt">n =</span> <span class="dv">500</span>, <span class="dt">pi =</span> <span class="fl">.5</span>, <span class="dt">model =</span> <span class="st">&quot;Warner&quot;</span>, <span class="dt">p =</span> <span class="dv">2</span><span class="op">/</span><span class="dv">12</span>)</a>
-<a class="sourceLine" id="cb26-3" title="3">DQ &lt;-<span class="st"> </span><span class="kw">rbinom</span>(<span class="dv">500</span>, <span class="dv">1</span>, <span class="dt">prob =</span> <span class="fl">.35</span>)</a>
-<a class="sourceLine" id="cb26-4" title="4">response &lt;-<span class="st"> </span><span class="kw">c</span>(RR<span class="op">$</span>response, DQ)</a>
-<a class="sourceLine" id="cb26-5" title="5"><span class="co"># dummy variable for RR vs. DQ</span></a>
-<a class="sourceLine" id="cb26-6" title="6">group &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">0</span>, <span class="dt">each=</span><span class="dv">500</span>)</a>
-<a class="sourceLine" id="cb26-7" title="7"><span class="co"># predictor variable (effect-coded)</span></a>
-<a class="sourceLine" id="cb26-8" title="8">RR.design &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="op">-</span><span class="dv">1</span>), <span class="dt">each=</span><span class="dv">500</span>)</a>
-<a class="sourceLine" id="cb26-9" title="9"><span class="co"># simulate interaction of question format and age </span></a>
-<a class="sourceLine" id="cb26-10" title="10"><span class="co"># (DQ: no correlation; RR: positive correlation)</span></a>
-<a class="sourceLine" id="cb26-11" title="11">z.age &lt;-<span class="st"> </span><span class="kw">scale</span>(<span class="kw">c</span>(<span class="kw">rnorm</span>(<span class="dv">500</span>, <span class="dt">mean=</span>RR<span class="op">$</span>true, <span class="dt">sd=</span><span class="dv">3</span>), </a>
-<a class="sourceLine" id="cb26-12" title="12">                 <span class="kw">rnorm</span>(<span class="dv">500</span>, <span class="dt">mean=</span>.<span class="dv">5</span>, <span class="dt">sd=</span><span class="dv">3</span>)))         </a>
-<a class="sourceLine" id="cb26-13" title="13"><span class="co"># fit full model </span></a>
-<a class="sourceLine" id="cb26-14" title="14"><span class="co"># (testing difference in prevalence estimates and interaction)</span></a>
-<a class="sourceLine" id="cb26-15" title="15">fit &lt;-<span class="st"> </span><span class="kw">RRlog</span>(response <span class="op">~</span><span class="st"> </span>RR.design <span class="op">*</span><span class="st"> </span>z.age, <span class="dt">model=</span><span class="st">&quot;Warner&quot;</span>, </a>
-<a class="sourceLine" id="cb26-16" title="16">             <span class="dt">p=</span><span class="dv">2</span><span class="op">/</span><span class="dv">12</span>, <span class="dt">group=</span>group, <span class="dt">LR.test=</span><span class="ot">TRUE</span>, <span class="dt">fit.n =</span> <span class="dv">1</span>) </a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate data with different prevalence rates for RR and DQ</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>RR <span class="ot">&lt;-</span> <span class="fu">RRgen</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">pi =</span> .<span class="dv">5</span>, <span class="at">model =</span> <span class="st">&quot;Warner&quot;</span>, <span class="at">p =</span> <span class="dv">2</span><span class="sc">/</span><span class="dv">12</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>DQ <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="dv">500</span>, <span class="dv">1</span>, <span class="at">prob =</span> .<span class="dv">35</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>response <span class="ot">&lt;-</span> <span class="fu">c</span>(RR<span class="sc">$</span>response, DQ)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># dummy variable for RR vs. DQ</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>group <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">0</span>, <span class="at">each=</span><span class="dv">500</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># predictor variable (effect-coded)</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>RR.design <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="sc">-</span><span class="dv">1</span>), <span class="at">each=</span><span class="dv">500</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate interaction of question format and age </span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># (DQ: no correlation; RR: positive correlation)</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>z.age <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">c</span>(<span class="fu">rnorm</span>(<span class="dv">500</span>, <span class="at">mean=</span>RR<span class="sc">$</span>true, <span class="at">sd=</span><span class="dv">3</span>), </span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">rnorm</span>(<span class="dv">500</span>, <span class="at">mean=</span>.<span class="dv">5</span>, <span class="at">sd=</span><span class="dv">3</span>)))         </span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co"># fit full model </span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="co"># (testing difference in prevalence estimates and interaction)</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">RRlog</span>(response <span class="sc">~</span> RR.design <span class="sc">*</span> z.age, <span class="at">model=</span><span class="st">&quot;Warner&quot;</span>, </span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">p=</span><span class="dv">2</span><span class="sc">/</span><span class="dv">12</span>, <span class="at">group=</span>group, <span class="at">LR.test=</span><span class="cn">TRUE</span>, <span class="at">fit.n =</span> <span class="dv">1</span>) </span></code></pre></div>
 <pre><code>## Warning: The group vector contains 2 categories, which are interpreted
 ## asfollows: 0=direct question format ; 1=randomized response format</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">summary</span>(fit)</a></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlog.formula(formula = response ~ RR.design * z.age, model = &quot;Warner&quot;, 
 ##     p = 2/12, group = group, LR.test = TRUE, fit.n = 1)
@@ -600,28 +438,28 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Model fit:
 ##     n    logLik
-##  1000 -664.8368
+##  1000 -667.8259
 ## 
 ##                 Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2 Pr(&gt;deltaG2)
-## (Intercept)     -0.35371  0.08290  18.20465        0.00002 18.0452        2e-05
-## RR.design        0.31031  0.08290  14.01122        0.00018 13.8195      0.00020
-## z.age            0.16100  0.08601   3.50422        0.06121  3.6200      0.05709
-## RR.design:z.age  0.13299  0.08601   2.39116        0.12202  2.4592      0.11684
+## (Intercept)     -0.31796  0.08354  14.48741        0.00014 14.4339      0.00015
+## RR.design        0.25584  0.08354   9.37978        0.00219  9.2239      0.00239
+## z.age            0.26898  0.08656   9.65652        0.00189 10.3764      0.00128
+## RR.design:z.age  0.14589  0.08656   2.84078        0.09190  2.9673      0.08496
 ##                    
 ## (Intercept)     ***
-## RR.design       ***
-## z.age           .  
-## RR.design:z.age    
+## RR.design       ** 
+## z.age           ** 
+## RR.design:z.age .  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="co"># get prevalence estimate for RR and DQ </span></a>
-<a class="sourceLine" id="cb30-2" title="2"><span class="co"># (for z.age = 0 = mean(z.age))</span></a>
-<a class="sourceLine" id="cb30-3" title="3">logit1 &lt;-<span class="st"> </span><span class="kw">coef</span>(fit) <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span><span class="op">*</span><span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb30-4" title="4"><span class="kw">cat</span>(<span class="kw">exp</span>(logit1) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span><span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(logit1)))</a></code></pre></div>
-<pre><code>## 0.4891515</code></pre>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">logit2 &lt;-<span class="st"> </span><span class="kw">coef</span>(fit) <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">-1</span>, <span class="dv">0</span>, <span class="dv">-1</span><span class="op">*</span><span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb32-2" title="2"><span class="kw">cat</span>(<span class="kw">exp</span>(logit2) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span><span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(logit2)))</a></code></pre></div>
-<pre><code>## 0.339838</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get prevalence estimate for RR and DQ </span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (for z.age = 0 = mean(z.age))</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>logit1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit) <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span><span class="sc">*</span><span class="dv">0</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">exp</span>(logit1) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">+</span> <span class="fu">exp</span>(logit1)))</span></code></pre></div>
+<pre><code>## 0.4844757</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>logit2 <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit) <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span><span class="sc">*</span><span class="dv">0</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">exp</span>(logit2) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">+</span> <span class="fu">exp</span>(logit2)))</span></code></pre></div>
+<pre><code>## 0.3603599</code></pre>
 <p> </p>
 </div>
 <div id="specification-of-rr-models-using-one-group" class="section level1">
@@ -723,7 +561,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p><code>model = &#39;custom&#39;</code></p>
 <p>RR designs can be understood as a misclassification mechanisms: The true latent states/responses are perturbed randomly according to a known randomization scheme. This randomization scheme can be described in form of a matrix <span class="math inline">\(PW\)</span>, where each entry <span class="math inline">\(PW_{ji}\)</span> gives the probability to give a response <span class="math inline">\(j\)</span> if the true state is <span class="math inline">\(i\)</span>.</p>
 <p>The package <code>RRreg</code> contains the function <code>getPW</code> to obtain this misclassification matrix for the implemented designs. The forced response design with proabilities <code>P=c(.1,.2)</code>, for instance, can be described by:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="kw">getPW</span>(<span class="dt">model =</span> <span class="st">&quot;FR&quot;</span>, <span class="dt">p =</span> <span class="kw">c</span>(.<span class="dv">1</span>, <span class="fl">.1</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getPW</span>(<span class="at">model =</span> <span class="st">&quot;FR&quot;</span>, <span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">1</span>, .<span class="dv">1</span>))</span></code></pre></div>
 <pre><code>##     0   1
 ## 0 0.9 0.1
 ## 1 0.1 0.9</code></pre>
@@ -820,15 +658,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 <div id="code-examples-for-two-group-models" class="section level4">
 <h4>Code Examples for Two-Group Models</h4>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1"><span class="co">### generate 2 two-group RR variables and a continuous covariate</span></a>
-<a class="sourceLine" id="cb36-2" title="2">RR1 &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dv">1000</span>, <span class="dt">pi=</span>.<span class="dv">4</span>, <span class="dt">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="dt">p=</span><span class="kw">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="dt">complyRates=</span><span class="kw">c</span>(.<span class="dv">8</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb36-3" title="3">RR2 &lt;-<span class="st"> </span><span class="kw">RRgen</span>(<span class="dv">1000</span>, <span class="dt">pi=</span>.<span class="dv">6</span>, <span class="dt">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="dt">p=</span><span class="kw">c</span>(.<span class="dv">3</span> ,.<span class="dv">7</span>), <span class="dt">complyRates=</span><span class="kw">c</span>(.<span class="dv">9</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb36-4" title="4">cov &lt;-<span class="st"> </span>RR1<span class="op">$</span>true <span class="op">+</span><span class="st"> </span>RR2<span class="op">$</span>true <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">3</span>)</a>
-<a class="sourceLine" id="cb36-5" title="5"></a>
-<a class="sourceLine" id="cb36-6" title="6"><span class="co">### logistic regression (dependent RR variable)</span></a>
-<a class="sourceLine" id="cb36-7" title="7">logmod &lt;-<span class="st"> </span><span class="kw">RRlog</span>(RR1<span class="op">$</span>response <span class="op">~</span><span class="st"> </span>cov, <span class="dt">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="dt">p=</span><span class="kw">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), </a>
-<a class="sourceLine" id="cb36-8" title="8">                <span class="dt">group=</span>RR1<span class="op">$</span>group, <span class="dt">fit.n =</span> <span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb36-9" title="9"><span class="kw">summary</span>(logmod)</a></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="do">### generate 2 two-group RR variables and a continuous covariate</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>RR1 <span class="ot">&lt;-</span> <span class="fu">RRgen</span>(<span class="dv">1000</span>, <span class="at">pi=</span>.<span class="dv">4</span>, <span class="at">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="at">p=</span><span class="fu">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="at">complyRates=</span><span class="fu">c</span>(.<span class="dv">8</span>,<span class="dv">1</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>RR2 <span class="ot">&lt;-</span> <span class="fu">RRgen</span>(<span class="dv">1000</span>, <span class="at">pi=</span>.<span class="dv">6</span>, <span class="at">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="at">p=</span><span class="fu">c</span>(.<span class="dv">3</span> ,.<span class="dv">7</span>), <span class="at">complyRates=</span><span class="fu">c</span>(.<span class="dv">9</span>,<span class="dv">1</span>))</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>cov <span class="ot">&lt;-</span> RR1<span class="sc">$</span>true <span class="sc">+</span> RR2<span class="sc">$</span>true <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">3</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="do">### logistic regression (dependent RR variable)</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>logmod <span class="ot">&lt;-</span> <span class="fu">RRlog</span>(RR1<span class="sc">$</span>response <span class="sc">~</span> cov, <span class="at">model=</span><span class="st">&quot;SLD&quot;</span>, <span class="at">p=</span><span class="fu">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), </span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">group=</span>RR1<span class="sc">$</span>group, <span class="at">fit.n =</span> <span class="dv">1</span>)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logmod)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlog.formula(formula = RR1$response ~ cov, model = &quot;SLD&quot;, p = c(0.2, 
 ##     0.8), group = RR1$group, fit.n = 1)
@@ -838,26 +676,26 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Model fit:
 ##     n    logLik
-##  1000 -598.7678
+##  1000 -577.9825
 ## 
 ##             Estimate   StdErr Wald test Pr(&gt;Chi2,df=1) deltaG2 Pr(&gt;deltaG2)    
-## (Intercept) -0.36157  0.20696   3.05214        0.08063  3.1153      0.07756 .  
-## cov          0.02081  0.05169   0.16204        0.68729  0.1632      0.68626    
-## t            0.78203  0.04256  26.23044        0.00000 14.8040      0.00012 ***
+## (Intercept) -0.82045  0.23056  12.66281        0.00037 14.6272      0.00013 ***
+## cov          0.07946  0.04911   2.61803        0.10566  2.6871      0.10117    
+## t            0.85130  0.05797   6.57943        0.01032  4.3946      0.03605 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Note that the parameter t is tested against the null hypothesis 
 ##         that all participants answered truthfully (i.e., H0: t=1).</code></pre>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co">### group matrix for RRlin and RRcor: use multiple group vectors in one matrix</span></a>
-<a class="sourceLine" id="cb38-2" title="2">group &lt;-<span class="st"> </span><span class="kw">cbind</span>(RR1<span class="op">$</span>group, RR2<span class="op">$</span>group)</a>
-<a class="sourceLine" id="cb38-3" title="3"></a>
-<a class="sourceLine" id="cb38-4" title="4"><span class="co"># bivariate correlation between 2 two-group variables and a continuous covariate</span></a>
-<a class="sourceLine" id="cb38-5" title="5"><span class="co"># note that only the most informative subsets of the data are used (see ?RRcor)</span></a>
-<a class="sourceLine" id="cb38-6" title="6">responses &lt;-<span class="st"> </span><span class="kw">cbind</span>(RR1<span class="op">$</span>response, RR2<span class="op">$</span>response, cov)</a>
-<a class="sourceLine" id="cb38-7" title="7"><span class="kw">colnames</span>(responses) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;RR1&quot;</span>, <span class="st">&quot;RR2&quot;</span>, <span class="st">&quot;cov&quot;</span>)</a>
-<a class="sourceLine" id="cb38-8" title="8"><span class="kw">RRcor</span>( responses, <span class="dt">models=</span><span class="kw">c</span>(<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;direct&quot;</span>), </a>
-<a class="sourceLine" id="cb38-9" title="9">       <span class="dt">p.list=</span><span class="kw">list</span>(<span class="kw">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="kw">c</span>(.<span class="dv">3</span>, <span class="fl">.7</span>)), <span class="dt">group=</span>group)</a></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="do">### group matrix for RRlin and RRcor: use multiple group vectors in one matrix</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>group <span class="ot">&lt;-</span> <span class="fu">cbind</span>(RR1<span class="sc">$</span>group, RR2<span class="sc">$</span>group)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># bivariate correlation between 2 two-group variables and a continuous covariate</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co"># note that only the most informative subsets of the data are used (see ?RRcor)</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>responses <span class="ot">&lt;-</span> <span class="fu">cbind</span>(RR1<span class="sc">$</span>response, RR2<span class="sc">$</span>response, cov)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(responses) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;RR1&quot;</span>, <span class="st">&quot;RR2&quot;</span>, <span class="st">&quot;cov&quot;</span>)</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="fu">RRcor</span>( responses, <span class="at">models=</span><span class="fu">c</span>(<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;direct&quot;</span>), </span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">p.list=</span><span class="fu">list</span>(<span class="fu">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="fu">c</span>(.<span class="dv">3</span>, .<span class="dv">7</span>)), <span class="at">group=</span>group)</span></code></pre></div>
 <pre><code>## Randomized response variables:
 ##   Variable RRmodel p       
 ## 1 RR1      SLD      0.2 0.8
@@ -868,13 +706,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## Estimated correlation matrix:
 ##          RR1      RR2      cov
-## RR1 1.000000       NA 0.030978
-## RR2       NA 1.000000 0.094033
-## cov 0.030978 0.094033 1.000000</code></pre>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="co"># linear model with 2 RR predictors</span></a>
-<a class="sourceLine" id="cb40-2" title="2">linmod &lt;-<span class="st"> </span><span class="kw">RRlin</span>(cov <span class="op">~</span><span class="st"> </span>RR1<span class="op">$</span>response<span class="op">+</span>RR2<span class="op">$</span>response, <span class="dt">models=</span><span class="kw">c</span>(<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;SLD&quot;</span>), </a>
-<a class="sourceLine" id="cb40-3" title="3">                <span class="dt">p.list=</span><span class="kw">list</span>(<span class="kw">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="kw">c</span>(.<span class="dv">3</span>, <span class="fl">.7</span>)), <span class="dt">group=</span>group, <span class="dt">fit.n=</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb40-4" title="4"><span class="kw">summary</span>(linmod)</a></code></pre></div>
+## RR1 1.000000       NA 0.122037
+## RR2       NA 1.000000 0.226232
+## cov 0.122037 0.226232 1.000000</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># linear model with 2 RR predictors</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>linmod <span class="ot">&lt;-</span> <span class="fu">RRlin</span>(cov <span class="sc">~</span> RR1<span class="sc">$</span>response<span class="sc">+</span>RR2<span class="sc">$</span>response, <span class="at">models=</span><span class="fu">c</span>(<span class="st">&quot;SLD&quot;</span>,<span class="st">&quot;SLD&quot;</span>), </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">p.list=</span><span class="fu">list</span>(<span class="fu">c</span>(.<span class="dv">2</span>,.<span class="dv">8</span>), <span class="fu">c</span>(.<span class="dv">3</span>, .<span class="dv">7</span>)), <span class="at">group=</span>group, <span class="at">fit.n=</span><span class="dv">1</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(linmod)</span></code></pre></div>
 <pre><code>## Call:
 ## RRlin(formula = cov ~ RR1$response + RR2$response, models = c(&quot;SLD&quot;, 
 ##     &quot;SLD&quot;), p.list = list(c(0.2, 0.8), c(0.3, 0.7)), group = group, 
@@ -886,14 +724,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 2 RR2$response SLD   c(0.3, 0.7)
 ## 
 ## Coefficients (beta):
-##              Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)  
-## (Intercept)   0.52699 0.30622    2.9617        0.08526 .
-## RR1$response  0.27162 0.48293    0.3163        0.57382  
-## RR2$response  0.61306 0.34352    3.1849        0.07432 .
+##              Estimate  StdErr Wald test Pr(&gt;Chi2,df=1)    
+## (Intercept)   0.03710 0.31297    0.0140         0.9056    
+## RR1$response  0.62302 0.43097    2.0898         0.1483    
+## RR2$response  1.38540 0.42102   10.8278         0.0010 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error (sigma): 3.037; N=1000</code></pre>
+## Residual standard error (sigma): 2.923; N=1000</code></pre>
 </div>
 </div>
 

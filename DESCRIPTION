@@ -1,20 +1,22 @@
 Package: RRreg
 Type: Package
 Title: Correlation and Regression Analyses for Randomized Response Data
-Version: 0.7.1
-Date: 2019-12-04
+Version: 0.7.3
+Date: 2021-09-02
 Authors@R: c(person("Daniel W.", "Heck", 
-                    email = "dheck@uni-marburg.de", role = c("aut","cre"), 
+                    email = "dheck@uni-marburg.de", 
+                    role = c("aut","cre"), 
                     comment = c(ORCID = "0000-0002-6302-9252")),
              person("Morten", "Moshagen",
-                    email = "morten.moshagen@uni-ulm.de", rol = "aut"))
+                    email = "morten.moshagen@uni-ulm.de", 
+                    role = "aut"))
 Author: Daniel W. Heck [aut, cre] (<https://orcid.org/0000-0002-6302-9252>),
   Morten Moshagen [aut]
 Maintainer: Daniel W. Heck <dheck@uni-marburg.de>
 Depends: R (>= 3.5.0)
 Imports: parallel, doParallel, foreach, stats, grDevices, graphics,
         lme4
-Suggests: knitr, R.rsp
+Suggests: rmarkdown, knitr, R.rsp
 Description: 
     Univariate and multivariate methods to analyze randomized response 
     (RR) survey designs (e.g., Warner, S. L. (1965). Randomized response: A 
@@ -38,8 +40,8 @@ LazyLoad: yes
 URL:
         https://www.sowi.uni-mannheim.de/en/erdfelder/research/software/rrreg/
 VignetteBuilder: knitr, R.rsp
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2019-12-04 21:29:01 UTC; daniel
+Packaged: 2021-09-02 21:08:08 UTC; daniel
 Repository: CRAN
-Date/Publication: 2019-12-04 22:20:22 UTC
+Date/Publication: 2021-09-03 12:10:15 UTC
