@@ -35,11 +35,11 @@ evasive answer bias. \emph{Journal of the American Statistical Association, 60},
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://www.sowi.uni-mannheim.de/en/erdfelder/research/software/rrreg/}
+  \item \url{https://github.com/danheck/RRreg}
 }
 
 }
 \author{
-Daniel W. Heck \email{dheck@uni-marburg.de} and Morten Moshagen \email{morten.moshagen@uni-ulm.de}
+Daniel W. Heck \email{daniel.heck@uni-marburg.de} and Morten Moshagen \email{morten.moshagen@uni-ulm.de}
 }
 \keyword{package}
